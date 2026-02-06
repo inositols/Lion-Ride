@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "799693652825",
+    "project_id": "nsuride-23865",
+    "storage_bucket": "nsuride-23865.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:799693652825:android:d945df3ab436e6795f0248",
+        "android_client_info": {
+          "package_name": "com.nsuride.nsuride_mobile"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAwEwPUZvFdEzOkx7Yz2SuOyLJ--_d3oZE"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
