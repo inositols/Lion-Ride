@@ -2,6 +2,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:equatable/equatable.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import '../../repositories/location_repository.dart';
+import '../../core/services/pricing_service.dart';
 
 part 'location_event.dart';
 part 'location_state.dart';
@@ -55,15 +56,14 @@ class LocationBloc extends Bloc<LocationEvent, LocationState> {
       emit(RouteCalculating());
       
       final polyline = _locationRepository.getRoutePolyline(currentPos, event.destination.location);
-      final distance = _locationRepository.calculateDistance(currentPos, event.destination.location);
+      final distanceInKm = _locationRepository.calculateDistance(currentPos, event.destination.location);
       
-      // Pricing Formula: ₦100 base + ₦50 per km, Min ₦200
-      double calculatedPrice = 100 + (distance * 50);
-      int finalPrice = calculatedPrice < 200 ? 200 : calculatedPrice.round();
+      // Calculate fare using the recalibrated PricingService
+      final finalPrice = PricingService.calculateFare(distanceInKm * 1000).toInt();
 
       emit(RouteLoaded(
         polyline: polyline,
-        distance: distance,
+        distance: distanceInKm,
         price: finalPrice,
         pickup: "Current Location",
         dropoff: event.destination.name,

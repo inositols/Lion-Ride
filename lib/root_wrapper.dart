@@ -8,6 +8,7 @@ import 'screens/student/student_home.dart';
 import 'screens/rider/rider_home.dart';
 import 'screens/splash/splash_screen.dart';
 import 'screens/onboarding/onboarding_screen.dart';
+import 'core/widgets/global_error_listener.dart';
 
 class RootWrapper extends StatefulWidget {
   const RootWrapper({super.key});
@@ -79,29 +80,31 @@ class _RootWrapperState extends State<RootWrapper> {
       return OnboardingScreen(onFinish: _finishOnboarding);
     }
 
-    return BlocBuilder<AuthBloc, AuthState>(
-      builder: (context, state) {
-        _logger.d('AuthBloc state in RootWrapper: $state');
-        if (state is AuthLoading || state is AuthInitial) {
-          return const Scaffold(
-            body: Center(child: CircularProgressIndicator()),
-          );
-        }
-
-        if (state is AuthAuthenticated) {
-          final user = state.user;
-          _logger.i('User authenticated: ${user.name} (${user.role})');
-          if (user.role == 'rider') {
-            return const RiderHome();
-          } else {
-            return const StudentHome();
+    return GlobalErrorListener(
+      child: BlocBuilder<AuthBloc, AuthState>(
+        builder: (context, state) {
+          _logger.d('AuthBloc state in RootWrapper: $state');
+          if (state is AuthLoading || state is AuthInitial) {
+            return const Scaffold(
+              body: Center(child: CircularProgressIndicator()),
+            );
           }
-        }
 
-        _logger.w('User not authenticated, showing LoginScreen. State: $state');
-        // Default to LoginScreen if Unauthenticated or Error
-        return const LoginScreen();
-      },
+          if (state is AuthAuthenticated) {
+            final user = state.user;
+            _logger.i('User authenticated: ${user.name} (${user.role})');
+            if (user.role == 'rider') {
+              return const RiderHome();
+            } else {
+              return const StudentHome();
+            }
+          }
+
+          _logger.w('User not authenticated, showing LoginScreen. State: $state');
+          // Default to LoginScreen if Unauthenticated or Error
+          return const LoginScreen();
+        },
+      ),
     );
   }
 }

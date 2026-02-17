@@ -1,5 +1,7 @@
+import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:google_fonts/google_fonts.dart';
 import '../../logic/auth/auth_bloc.dart';
 
 class LoginScreen extends StatefulWidget {
@@ -14,12 +16,11 @@ class _LoginScreenState extends State<LoginScreen> {
   final _passwordController = TextEditingController();
   final _nameController = TextEditingController();
   bool _isLogin = true;
-  String _role = 'student'; // Default role
+  String _role = 'student';
 
   @override
   void initState() {
     super.initState();
-    // Re-trigger auth check to ensure we aren't stuck in AuthInitial
     WidgetsBinding.instance.addPostFrameCallback((_) {
       context.read<AuthBloc>().add(AuthCheckRequested());
     });
@@ -38,143 +39,310 @@ class _LoginScreenState extends State<LoginScreen> {
     final password = _passwordController.text.trim();
     final name = _nameController.text.trim();
 
-    if (email.isEmpty || password.isEmpty) return;
+    debugPrint('LoginScreen: _submit triggered. Email: $email, IsLogin: $_isLogin');
+
+    if (email.isEmpty || password.isEmpty) {
+      debugPrint('LoginScreen: Email or Password empty');
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Please fill in all fields')),
+      );
+      return;
+    }
 
     if (_isLogin) {
       context.read<AuthBloc>().add(
-        AuthLoginRequested(email: email, password: password),
-      );
+            AuthLoginRequested(email: email, password: password),
+          );
     } else {
-      if (name.isEmpty) return;
+      if (name.isEmpty) {
+        debugPrint('LoginScreen: Name empty for signup');
+        return;
+      }
       context.read<AuthBloc>().add(
-        AuthSignUpRequested(
-          email: email,
-          password: password,
-          name: name,
-          role: _role,
-        ),
-      );
+            AuthSignUpRequested(
+              email: email,
+              password: password,
+              name: name,
+              role: _role,
+            ),
+          );
     }
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.white,
-      body: BlocConsumer<AuthBloc, AuthState>(
-        listener: (context, state) {
-          if (state is AuthError) {
-            ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(
-                content: Text(state.message),
-                backgroundColor: Colors.red,
-              ),
-            );
-          }
-        },
-        builder: (context, state) {
-          return Center(
-            child: SingleChildScrollView(
-              padding: const EdgeInsets.all(24.0),
-              child: Column(
-                mainAxisAlignment: .center,
-                crossAxisAlignment: CrossAxisAlignment.stretch,
-                children: [
-                  Text(
-                    'Nsuride',
-                    style: TextStyle(
-                      fontSize: 48,
-                      fontWeight: FontWeight.bold,
-                      color: Theme.of(context).primaryColor,
-                    ),
-                    textAlign: TextAlign.center,
-                  ),
-                  const SizedBox(height: 48),
-                  if (!_isLogin) ...[
-                    TextField(
-                      controller: _nameController,
-                      decoration: const InputDecoration(
-                        labelText: 'Full Name',
-                        prefixIcon: Icon(Icons.person),
-                        border: OutlineInputBorder(),
-                      ),
-                    ),
-                    const SizedBox(height: 16),
+      body: Stack(
+        children: [
+          // Background Image
+          Positioned.fill(
+            child: Image.network(
+              'https://images.unsplash.com/photo-1521737604893-d14cc237f11d?q=80&w=2084&auto=format&fit=crop',
+              fit: BoxFit.cover,
+              errorBuilder: (context, error, stackTrace) {
+                return Container(color: const Color(0xFF00332C));
+              },
+            ),
+          ),
+          // Dark Overlay Gradient
+          Positioned.fill(
+            child: Container(
+              decoration: BoxDecoration(
+                gradient: LinearGradient(
+                  begin: Alignment.topCenter,
+                  end: Alignment.bottomCenter,
+                  colors: [
+                    Colors.black.withOpacity(0.3),
+                    Colors.black.withOpacity(0.7),
                   ],
-                  TextField(
-                    controller: _emailController,
-                    decoration: const InputDecoration(
-                      labelText: 'Email Address',
-                      prefixIcon: Icon(Icons.email),
-                      border: OutlineInputBorder(),
-                    ),
-                    keyboardType: TextInputType.emailAddress,
-                  ),
-                  const SizedBox(height: 16),
-                  TextField(
-                    controller: _passwordController,
-                    decoration: const InputDecoration(
-                      labelText: 'Password',
-                      prefixIcon: Icon(Icons.lock),
-                      border: OutlineInputBorder(),
-                    ),
-                    obscureText: true,
-                  ),
-                  if (!_isLogin) ...[
-                    const SizedBox(height: 24),
-                    const Text(
-                      'I am joining as a:',
-                      style: TextStyle(fontWeight: FontWeight.bold),
-                    ),
-                    const SizedBox(height: 8),
-                    SegmentedButton<String>(
-                      segments: const [
-                        ButtonSegment(
-                          value: 'student',
-                          label: Text('Student'),
-                          icon: Icon(Icons.school),
-                        ),
-                        ButtonSegment(
-                          value: 'rider',
-                          label: Text('Rider'),
-                          icon: Icon(Icons.pedal_bike),
-                        ),
-                      ],
-                      selected: {_role},
-                      onSelectionChanged: (Set<String> newSelection) {
-                        setState(() {
-                          _role = newSelection.first;
-                        });
-                      },
-                    ),
-                  ],
-                  const SizedBox(height: 32),
-                  if (state is AuthLoading)
-                    const Center(child: CircularProgressIndicator())
-                  else
-                    ElevatedButton(
-                      style: ElevatedButton.styleFrom(
-                        padding: const EdgeInsets.symmetric(vertical: 16),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(8),
-                        ),
-                      ),
-                      onPressed: _submit,
-                      child: Text(_isLogin ? 'Login' : 'Create Account'),
-                    ),
-                  TextButton(
-                    onPressed: () => setState(() => _isLogin = !_isLogin),
-                    child: Text(
-                      _isLogin
-                          ? "Don't have an account? Sign Up"
-                          : 'Already have an account? Login',
-                    ),
-                  ),
-                ],
+                ),
               ),
             ),
-          );
-        },
+          ),
+          // Content
+          SafeArea(
+            child: BlocConsumer<AuthBloc, AuthState>(
+              listener: (context, state) {
+                if (state is AuthError) {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(
+                      content: Text(state.message),
+                      backgroundColor: Colors.redAccent,
+                      behavior: SnackBarBehavior.floating,
+                    ),
+                  );
+                }
+              },
+              builder: (context, state) {
+                return Center(
+                  child: SingleChildScrollView(
+                    padding: const EdgeInsets.all(24.0),
+                    child: Column(
+                      children: [
+                        // Logo/Title
+                        Text(
+                          'Lion Ride',
+                          style: GoogleFonts.outfit(
+                            fontSize: 48,
+                            fontWeight: FontWeight.w900,
+                            color: Colors.white,
+                            letterSpacing: 1.5,
+                            shadows: [
+                              Shadow(
+                                color: Colors.black.withOpacity(0.3),
+                                blurRadius: 10,
+                                offset: const Offset(0, 5),
+                              ),
+                            ],
+                          ),
+                          textAlign: TextAlign.center,
+                        ),
+                        const SizedBox(height: 8),
+                        Text(
+                          _isLogin ? 'Welcome Back!' : 'Join the Pride',
+                          style: GoogleFonts.inter(
+                            fontSize: 16,
+                            color: Colors.white.withOpacity(0.8),
+                            fontWeight: FontWeight.w500,
+                          ),
+                        ),
+                        const SizedBox(height: 40),
+                        // Glassmorphism Card
+                        ClipRRect(
+                          borderRadius: BorderRadius.circular(30),
+                          child: BackdropFilter(
+                            filter: ImageFilter.blur(sigmaX: 15, sigmaY: 15),
+                            child: Container(
+                              padding: const EdgeInsets.all(32),
+                              decoration: BoxDecoration(
+                                color: Colors.white.withOpacity(0.15),
+                                borderRadius: BorderRadius.circular(30),
+                                border: Border.all(
+                                  color: Colors.white.withOpacity(0.2),
+                                  width: 1.5,
+                                ),
+                              ),
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.stretch,
+                                children: [
+                                  if (!_isLogin) ...[
+                                    _buildTextField(
+                                      controller: _nameController,
+                                      label: 'Full Name',
+                                      icon: Icons.person_outline,
+                                    ),
+                                    const SizedBox(height: 16),
+                                  ],
+                                  _buildTextField(
+                                    controller: _emailController,
+                                    label: 'Email Address',
+                                    icon: Icons.email_outlined,
+                                    keyboardType: TextInputType.emailAddress,
+                                  ),
+                                  const SizedBox(height: 16),
+                                  _buildTextField(
+                                    controller: _passwordController,
+                                    label: 'Password',
+                                    icon: Icons.lock_outline,
+                                    obscureText: true,
+                                  ),
+                                  if (!_isLogin) ...[
+                                    const SizedBox(height: 24),
+                                    Text(
+                                      'I am a:',
+                                      style: GoogleFonts.inter(
+                                        color: Colors.white,
+                                        fontWeight: FontWeight.w600,
+                                      ),
+                                    ),
+                                    const SizedBox(height: 12),
+                                    Row(
+                                      children: [
+                                        Expanded(
+                                          child: _buildRoleButton(
+                                              'student', Icons.school_outlined),
+                                        ),
+                                        const SizedBox(width: 12),
+                                        Expanded(
+                                          child: _buildRoleButton(
+                                              'rider', Icons.directions_bike),
+                                        ),
+                                      ],
+                                    ),
+                                  ],
+                                  const SizedBox(height: 32),
+                                  if (state is AuthLoading)
+                                    const Center(
+                                      child: CircularProgressIndicator(
+                                        color: Colors.white,
+                                      ),
+                                    )
+                                  else
+                                    ElevatedButton(
+                                      style: ElevatedButton.styleFrom(
+                                        backgroundColor: Colors.white,
+                                        foregroundColor: const Color(0xFF004D40),
+                                        padding: const EdgeInsets.symmetric(
+                                            vertical: 18),
+                                        shape: RoundedRectangleBorder(
+                                          borderRadius:
+                                              BorderRadius.circular(16),
+                                        ),
+                                        elevation: 0,
+                                      ),
+                                      onPressed: _submit,
+                                      child: Text(
+                                        _isLogin ? 'LOGIN' : 'SIGN UP',
+                                        style: GoogleFonts.outfit(
+                                          fontWeight: FontWeight.bold,
+                                          fontSize: 16,
+                                          letterSpacing: 1.2,
+                                        ),
+                                      ),
+                                    ),
+                                ],
+                              ),
+                            ),
+                          ),
+                        ),
+                        const SizedBox(height: 24),
+                        TextButton(
+                          onPressed: () =>
+                              setState(() => _isLogin = !_isLogin),
+                          child: RichText(
+                            text: TextSpan(
+                              style: GoogleFonts.inter(color: Colors.white70),
+                              children: [
+                                TextSpan(
+                                  text: _isLogin
+                                      ? "New here? "
+                                      : "Already a member? ",
+                                ),
+                                TextSpan(
+                                  text: _isLogin ? "Sign Up" : "Login",
+                                  style: const TextStyle(
+                                    color: Colors.white,
+                                    fontWeight: FontWeight.bold,
+                                    decoration: TextDecoration.underline,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                );
+              },
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildTextField({
+    required TextEditingController controller,
+    required String label,
+    required IconData icon,
+    bool obscureText = false,
+    TextInputType? keyboardType,
+  }) {
+    return TextField(
+      controller: controller,
+      obscureText: obscureText,
+      keyboardType: keyboardType,
+      style: const TextStyle(color: Colors.white),
+      decoration: InputDecoration(
+        labelText: label,
+        labelStyle: TextStyle(color: Colors.white.withOpacity(0.7)),
+        prefixIcon: Icon(icon, color: Colors.white.withOpacity(0.7)),
+        enabledBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(16),
+          borderSide: BorderSide(color: Colors.white.withOpacity(0.3)),
+        ),
+        focusedBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(16),
+          borderSide: const BorderSide(color: Colors.white),
+        ),
+        filled: true,
+        fillColor: Colors.white.withOpacity(0.05),
+      ),
+    );
+  }
+
+  Widget _buildRoleButton(String role, IconData icon) {
+    bool isSelected = _role == role;
+    return GestureDetector(
+      onTap: () => setState(() => _role = role),
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 200),
+        padding: const EdgeInsets.symmetric(vertical: 12),
+        decoration: BoxDecoration(
+          color: isSelected ? Colors.white : Colors.white.withOpacity(0.1),
+          borderRadius: BorderRadius.circular(12),
+          border: Border.all(
+            color: isSelected ? Colors.white : Colors.white.withOpacity(0.2),
+          ),
+        ),
+        child: Column(
+          children: [
+            Icon(
+              icon,
+              color: isSelected ? const Color(0xFF004D40) : Colors.white,
+            ),
+            const SizedBox(height: 4),
+            Text(
+              role.toUpperCase(),
+              style: GoogleFonts.outfit(
+                fontSize: 10,
+                fontWeight: FontWeight.bold,
+                color: isSelected ? const Color(0xFF004D40) : Colors.white,
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }

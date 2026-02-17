@@ -1,13 +1,32 @@
 {
   "project_info": {
-    "project_number": "799693652825",
-    "project_id": "nsuride-23865",
-    "storage_bucket": "nsuride-23865.firebasestorage.app"
+    "project_number": "126116197247",
+    "project_id": "techieskills-ab13d",
+    "storage_bucket": "techieskills-ab13d.firebasestorage.app"
   },
   "client": [
     {
       "client_info": {
-        "mobilesdk_app_id": "1:799693652825:android:d945df3ab436e6795f0248",
+        "mobilesdk_app_id": "1:126116197247:android:c35db4a5509a46509f604a",
+        "android_client_info": {
+          "package_name": "com.example.app"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyB7o0MWPGlGkl9deg6bmcgheUK4q5-V0Ic"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:126116197247:android:ca982665dce4b5c89f604a",
         "android_client_info": {
           "package_name": "com.nsuride.nsuride_mobile"
         }
@@ -15,7 +34,7 @@
       "oauth_client": [],
       "api_key": [
         {
-          "current_key": "AIzaSyAwEwPUZvFdEzOkx7Yz2SuOyLJ--_d3oZE"
+          "current_key": "AIzaSyB7o0MWPGlGkl9deg6bmcgheUK4q5-V0Ic"
         }
       ],
       "services": {

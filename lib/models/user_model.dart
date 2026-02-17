@@ -10,6 +10,21 @@ class UserModel {
   final GeoPoint? lastLocation;
   final String? fcmToken;
 
+  // Verification Flags
+  final bool isPhoneVerified;
+  final bool isFaceVerified;
+  final bool documentsUploaded;
+  final bool isVerified; // Overall admin approval
+
+  // Document & Info
+  final String? ninUrl;
+  final String? bikePapersUrl;
+  final String? guarantorName;
+  final String? guarantorPhone;
+  final String? phoneNumber;
+  final String? plateNumber;
+  final String? unionNumber;
+
   UserModel({
     required this.uid,
     required this.name,
@@ -19,6 +34,17 @@ class UserModel {
     this.isOnline = false,
     this.lastLocation,
     this.fcmToken,
+    this.isPhoneVerified = false,
+    this.isFaceVerified = false,
+    this.documentsUploaded = false,
+    this.isVerified = false,
+    this.ninUrl,
+    this.bikePapersUrl,
+    this.guarantorName,
+    this.guarantorPhone,
+    this.phoneNumber,
+    this.plateNumber,
+    this.unionNumber,
   });
 
   Map<String, dynamic> toMap() {
@@ -31,6 +57,17 @@ class UserModel {
       'is_online': isOnline,
       'last_location': lastLocation,
       'fcm_token': fcmToken,
+      'is_phone_verified': isPhoneVerified,
+      'is_face_verified': isFaceVerified,
+      'documents_uploaded': documentsUploaded,
+      'is_verified': isVerified,
+      'nin_url': ninUrl,
+      'bike_papers_url': bikePapersUrl,
+      'guarantor_name': guarantorName,
+      'guarantor_phone': guarantorPhone,
+      'phone_number': phoneNumber,
+      'plate_number': plateNumber,
+      'union_number': unionNumber,
     };
   }
 
@@ -44,6 +81,58 @@ class UserModel {
       isOnline: map['is_online'] ?? false,
       lastLocation: map['last_location'] as GeoPoint?,
       fcmToken: map['fcm_token'],
+      isPhoneVerified: map['is_phone_verified'] ?? false,
+      isFaceVerified: map['is_face_verified'] ?? false,
+      documentsUploaded: map['documents_uploaded'] ?? false,
+      isVerified: map['is_verified'] ?? false,
+      ninUrl: map['nin_url'],
+      bikePapersUrl: map['bike_papers_url'],
+      guarantorName: map['guarantor_name'],
+      guarantorPhone: map['guarantor_phone'],
+      phoneNumber: map['phone_number'],
+      plateNumber: map['plate_number'],
+      unionNumber: map['union_number'],
+    );
+  }
+
+  UserModel copyWith({
+    String? name,
+    double? walletBalance,
+    bool? isOnline,
+    GeoPoint? lastLocation,
+    String? fcmToken,
+    bool? isPhoneVerified,
+    bool? isFaceVerified,
+    bool? documentsUploaded,
+    bool? isVerified,
+    String? ninUrl,
+    String? bikePapersUrl,
+    String? guarantorName,
+    String? guarantorPhone,
+    String? phoneNumber,
+    String? plateNumber,
+    String? unionNumber,
+  }) {
+    return UserModel(
+      uid: uid,
+      name: name ?? this.name,
+      email: email,
+      role: role,
+      walletBalance: walletBalance ?? this.walletBalance,
+      isOnline: isOnline ?? this.isOnline,
+      lastLocation: lastLocation ?? this.lastLocation,
+      fcmToken: fcmToken ?? this.fcmToken,
+      isPhoneVerified: isPhoneVerified ?? this.isPhoneVerified,
+      isFaceVerified: isFaceVerified ?? this.isFaceVerified,
+      documentsUploaded: documentsUploaded ?? this.documentsUploaded,
+      isVerified: isVerified ?? this.isVerified,
+      ninUrl: ninUrl ?? this.ninUrl,
+      bikePapersUrl: bikePapersUrl ?? this.bikePapersUrl,
+      guarantorName: guarantorName ?? this.guarantorName,
+      guarantorPhone: guarantorPhone ?? this.guarantorPhone,
+      phoneNumber: phoneNumber ?? this.phoneNumber,
+      plateNumber: plateNumber ?? this.plateNumber,
+      unionNumber: unionNumber ?? this.unionNumber,
     );
   }
 }

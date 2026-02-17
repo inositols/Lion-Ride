@@ -1,26 +1,34 @@
 import 'package:url_launcher/url_launcher.dart';
+import 'package:share_plus/share_plus.dart';
+import '../../models/ride_model.dart';
+import '../../models/user_model.dart';
 
 class SafetyService {
-  // UNN Campus Security or Trusted Contact
-  static const String emergencyNumber = "0800-UNN-SECURE"; // Placeholder
-  static const String emergencySMS = "08001234567";
+  static const String emergencyNumber = "112"; // Or UNN Security: "080..."
 
-  static Future<void> triggerSOS(String studentName, String? location) async {
-    final String message =
-        "EMERGENCY: Rider SOS from $studentName at $location. Please send help!";
-    final Uri smsUri = Uri.parse(
-      "sms:$emergencySMS?body=${Uri.encodeComponent(message)}",
-    );
-
-    if (await canLaunchUrl(smsUri)) {
-      await launchUrl(smsUri);
+  static Future<void> callEmergency() async {
+    final Uri url = Uri.parse("tel:$emergencyNumber");
+    if (await canLaunchUrl(url)) {
+      await launchUrl(url);
     }
   }
 
-  static Future<void> callSecurity() async {
-    final Uri callUri = Uri.parse("tel:$emergencyNumber");
-    if (await canLaunchUrl(callUri)) {
-      await launchUrl(callUri);
-    }
+  static Future<void> shareTripDetails({
+    required RideModel ride,
+    required UserModel driver,
+  }) async {
+    final String text = 
+      "I'm on an Nsuride trip! \n"
+      "Driver: ${driver.name}\n"
+      "Plate: ${driver.plateNumber ?? 'N/A'}\n"
+      "Union No: ${driver.unionNumber ?? 'N/A'}\n"
+      "Route: ${ride.pickupAddress} to ${ride.dropoffAddress}.";
+    
+    await Share.share(text);
+  }
+
+  // Pre-existing SOS trigger (referenced in StudentHome)
+  static Future<void> triggerSOS(String studentName, String? location) async {
+    // Implementation for SOS (e.g., sending to backend)
   }
 }

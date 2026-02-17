@@ -20,6 +20,20 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
     on<AuthLoginRequested>(_onAuthLoginRequested);
     on<AuthSignUpRequested>(_onAuthSignUpRequested);
     on<AuthLogoutRequested>(_onAuthLogoutRequested);
+    on<AuthProfileUpdateRequested>(_onAuthProfileUpdateRequested);
+  }
+
+  Future<void> _onAuthProfileUpdateRequested(
+    AuthProfileUpdateRequested event,
+    Emitter<AuthState> emit,
+  ) async {
+    final currentUser = FirebaseAuth.instance.currentUser;
+    if (currentUser != null) {
+      final profile = await _authRepository.getUserProfile(currentUser.uid);
+      if (profile != null) {
+        emit(AuthAuthenticated(profile));
+      }
+    }
   }
 
   Future<void> _onAuthCheckRequested(
@@ -28,16 +42,9 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
   ) async {
     _logger.d('AuthCheckRequested received');
     try {
-      // Use a timeout or a faster check for the initial state
-      final firebaseUser = await _authRepository.user.first.timeout(
-        const Duration(seconds: 5),
-        onTimeout: () {
-          _logger.e('Auth check timed out');
-          return null; // Treat as no user if it times out
-        },
-      );
-
-      _logger.d('Firebase user check result: ${firebaseUser?.uid ?? 'Null'}');
+      // Check current user directly for faster initial response
+      final firebaseUser = FirebaseAuth.instance.currentUser;
+      _logger.d('Direct FirebaseAuth.instance.currentUser: ${firebaseUser?.uid ?? 'Null'}');
 
       if (firebaseUser != null) {
         final profile = await _authRepository.getUserProfile(firebaseUser.uid);
@@ -45,15 +52,15 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
           _logger.i('Profile found for UID: ${firebaseUser.uid}');
           emit(AuthAuthenticated(profile));
         } else {
-          _logger.w('No profile found for UID: ${firebaseUser.uid}');
+          _logger.w('No profile found in Firestore for UID: ${firebaseUser.uid}');
           emit(AuthUnauthenticated());
         }
       } else {
-        _logger.i('No Firebase user found');
+        _logger.i('No active Firebase session found');
         emit(AuthUnauthenticated());
       }
     } catch (e) {
-      _logger.e('Critical error in AuthCheckRequested: $e');
+      _logger.e('Error in AuthCheckRequested: $e');
       emit(AuthError(e.toString()));
     }
   }
@@ -62,11 +69,14 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
     AuthLoginRequested event,
     Emitter<AuthState> emit,
   ) async {
+    _logger.i('Attempting login for email: ${event.email}');
     emit(AuthLoading());
     try {
       final user = await _authRepository.signIn(event.email, event.password);
+      _logger.i('Login successful for UID: ${user.uid}');
       emit(AuthAuthenticated(user));
     } catch (e) {
+      _logger.e('Login failed: $e');
       emit(AuthError(e.toString()));
     }
   }
