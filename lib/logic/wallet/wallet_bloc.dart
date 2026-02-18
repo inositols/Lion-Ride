@@ -63,7 +63,14 @@ class WalletBloc extends Bloc<WalletEvent, WalletState> {
             return;
           }
           
-          final balance = (userSnap.get('wallet_balance') ?? 0.0).toDouble();
+          final userData = userSnap.data();
+          if (userData == null) {
+            _logger.e('User data is null for UID: $userId');
+            add(_WalletErrorOccurred('Failed to read user data.'));
+            return;
+          }
+
+          final balance = (userData['wallet_balance'] ?? 0.0).toDouble();
           _logger.d('Wallet balance updated: $balance');
           
           // We need transactions too to emit WalletLoaded
@@ -74,15 +81,26 @@ class WalletBloc extends Bloc<WalletEvent, WalletState> {
               add(_WalletUpdated(balance, txs));
             },
             onError: (error) {
-              _logger.e('Error fetching transaction history: $error');
-              // If it's a missing index error, the log will show the link
-              add(_WalletErrorOccurred('Failed to load transaction history. If this is a new environment, a composite index might be required. Check logs for the creation link.'));
+              final errorStr = error.toString();
+              _logger.e('Error fetching transaction history: $errorStr');
+              
+              String msg = 'Failed to load transactions.';
+              if (errorStr.contains('requires an index')) {
+                msg = 'Database index required. Please contact support or check console logs.';
+                
+                // Extracting link for easier access
+                final linkMatch = RegExp(r'https://console\.firebase\.google\.com[^\s]*').firstMatch(errorStr);
+                if (linkMatch != null) {
+                  _logger.i('--- FIREBASE INDEX LINK ---\n${linkMatch.group(0)}\n---------------------------');
+                }
+              }
+              add(_WalletErrorOccurred(msg));
             },
           );
         },
         onError: (error) {
           _logger.e('Error fetching user document: $error');
-          add(_WalletErrorOccurred('Failed to load wallet data.'));
+          add(_WalletErrorOccurred('Failed to load wallet balance: ${error.toString()}'));
         },
       );
     } catch (e) {

@@ -80,16 +80,7 @@ class _RiderHomeState extends State<RiderHome> {
 
           // Security Check: Enforce Verification Flow
           if (!user.isVerified) {
-            return RepositoryProvider(
-              create: (context) => VerificationRepository(),
-              child: BlocProvider(
-                create: (context) => VerificationBloc(
-                  repository: context.read<VerificationRepository>(),
-                  authBloc: context.read<AuthBloc>(),
-                )..add(CheckVerificationStatus()),
-                child: const VerificationWizard(),
-              ),
-            );
+            return const VerificationWizard();
           }
 
           return BlocListener<RideBloc, RideState>(

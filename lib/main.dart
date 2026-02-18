@@ -5,10 +5,12 @@ import 'repositories/auth_repository.dart';
 import 'repositories/location_repository.dart';
 import 'repositories/wallet_repository.dart';
 import 'repositories/ride_repository.dart';
+import 'repositories/verification_repository.dart';
 import 'logic/auth/auth_bloc.dart';
 import 'logic/location/location_bloc.dart';
 import 'logic/wallet/wallet_bloc.dart';
 import 'logic/ride/ride_bloc.dart';
+import 'logic/verification/verification_bloc.dart';
 import 'root_wrapper.dart';
 import 'core/theme/app_theme.dart';
 import 'firebase_options.dart';
@@ -21,6 +23,7 @@ void main() async {
   final locationRepository = LocationRepository();
   final walletRepository = WalletRepository();
   final rideRepository = RideRepository();
+  final verificationRepository = VerificationRepository();
 
   runApp(
     MyApp(
@@ -28,6 +31,7 @@ void main() async {
       locationRepository: locationRepository,
       walletRepository: walletRepository,
       rideRepository: rideRepository,
+      verificationRepository: verificationRepository,
     ),
   );
 }
@@ -37,6 +41,7 @@ class MyApp extends StatelessWidget {
   final LocationRepository locationRepository;
   final WalletRepository walletRepository;
   final RideRepository rideRepository;
+  final VerificationRepository verificationRepository;
 
   const MyApp({
     super.key,
@@ -44,6 +49,7 @@ class MyApp extends StatelessWidget {
     required this.locationRepository,
     required this.walletRepository,
     required this.rideRepository,
+    required this.verificationRepository,
   });
 
   @override
@@ -54,6 +60,7 @@ class MyApp extends StatelessWidget {
         RepositoryProvider.value(value: locationRepository),
         RepositoryProvider.value(value: walletRepository),
         RepositoryProvider.value(value: rideRepository),
+        RepositoryProvider.value(value: verificationRepository),
       ],
       child: MultiBlocProvider(
         providers: [
@@ -78,9 +85,15 @@ class MyApp extends StatelessWidget {
               authRepository: authRepository,
             ),
           ),
+          BlocProvider(
+            create: (context) => VerificationBloc(
+              repository: verificationRepository,
+              authBloc: context.read<AuthBloc>(),
+            )..add(CheckVerificationStatus()),
+          ),
         ],
         child: MaterialApp(
-          title: 'Nsuride',
+          title: 'Lion Ride',
           debugShowCheckedModeBanner: false,
           theme: AppTheme.lightTheme,
           home: const RootWrapper(),

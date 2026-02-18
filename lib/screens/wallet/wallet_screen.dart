@@ -74,42 +74,97 @@ class WalletScreen extends StatelessWidget {
           }
         },
         builder: (context, state) {
-          if (state is WalletLoading) {
-            return const Center(child: CircularProgressIndicator());
+          if (state is WalletLoading || state is WalletInitial) {
+            return const Center(
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  CircularProgressIndicator(color: Color(0xFF004D40)),
+                  SizedBox(height: 16),
+                  Text('Fetching wallet details...'),
+                ],
+              ),
+            );
+          }
+
+          if (state is WalletError) {
+            return Center(
+              child: Padding(
+                padding: const EdgeInsets.all(32.0),
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    const Icon(Icons.error_outline, size: 64, color: Colors.red),
+                    const SizedBox(height: 16),
+                    Text(
+                      'Oops! Something went wrong',
+                      style: Theme.of(context).textTheme.titleLarge,
+                      textAlign: TextAlign.center,
+                    ),
+                    const SizedBox(height: 8),
+                    Text(
+                      state.message,
+                      textAlign: TextAlign.center,
+                      style: const TextStyle(color: Colors.grey),
+                    ),
+                    const SizedBox(height: 24),
+                    ElevatedButton(
+                      onPressed: () => context.read<WalletBloc>().add(LoadWallet()),
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: const Color(0xFF004D40),
+                        foregroundColor: Colors.white,
+                      ),
+                      child: const Text('Retry'),
+                    ),
+                  ],
+                ),
+              ),
+            );
           }
 
           if (state is WalletLoaded) {
-            return Column(
-              children: [
-                _buildBalanceCard(context, state.balance),
-                const Padding(
-                  padding: EdgeInsets.symmetric(horizontal: 20, vertical: 10),
-                  child: Row(
-                    children: [
-                      Text(
-                        'Recent Transactions',
-                        style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-                      ),
-                    ],
+            return RefreshIndicator(
+              onRefresh: () async {
+                context.read<WalletBloc>().add(LoadWallet());
+              },
+              child: ListView(
+                physics: const AlwaysScrollableScrollPhysics(),
+                children: [
+                  _buildBalanceCard(context, state.balance),
+                  const Padding(
+                    padding: EdgeInsets.symmetric(horizontal: 20, vertical: 10),
+                    child: Row(
+                      children: [
+                        Text(
+                          'Recent Transactions',
+                          style: TextStyle(
+                              fontSize: 18, fontWeight: FontWeight.bold),
+                        ),
+                      ],
+                    ),
                   ),
-                ),
-                Expanded(
-                  child: state.transactions.isEmpty
-                      ? const Center(child: Text('No transactions yet'))
+                  state.transactions.isEmpty
+                      ? const SizedBox(
+                          height: 200,
+                          child: Center(child: Text('No transactions yet')),
+                        )
                       : ListView.separated(
+                          shrinkWrap: true,
+                          physics: const NeverScrollableScrollPhysics(),
                           padding: const EdgeInsets.symmetric(horizontal: 20),
                           itemCount: state.transactions.length,
                           separatorBuilder: (context, index) => const Divider(),
                           itemBuilder: (context, index) {
-                            return _buildTransactionItem(state.transactions[index]);
+                            return _buildTransactionItem(
+                                state.transactions[index]);
                           },
                         ),
-                ),
-              ],
+                ],
+              ),
             );
           }
 
-          return const Center(child: Text('Initialize your wallet...'));
+          return const Center(child: Text('Connecting to wallet...'));
         },
       ),
     );

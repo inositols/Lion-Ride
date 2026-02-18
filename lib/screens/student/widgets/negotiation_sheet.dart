@@ -48,183 +48,185 @@ class _NegotiationSheetState extends State<NegotiationSheet> {
         color: Colors.white,
         borderRadius: BorderRadius.vertical(top: Radius.circular(30)),
       ),
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        crossAxisAlignment: CrossAxisAlignment.stretch,
-        children: [
-          // Header
-          Center(
-            child: Container(
-              width: 40,
-              height: 4,
-              margin: const EdgeInsets.only(bottom: 20),
-              decoration: BoxDecoration(
-                color: Colors.grey[300],
-                borderRadius: BorderRadius.circular(2),
+      child: SingleChildScrollView(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            // Header
+            Center(
+              child: Container(
+                width: 40,
+                height: 4,
+                margin: const EdgeInsets.only(bottom: 20),
+                decoration: BoxDecoration(
+                  color: Colors.grey[300],
+                  borderRadius: BorderRadius.circular(2),
+                ),
               ),
             ),
-          ),
-          Text(
-            'Make Your Offer',
-            style: GoogleFonts.outfit(
-              fontSize: 22,
-              fontWeight: FontWeight.bold,
-              color: tealColor,
+            Text(
+              'Make Your Offer',
+              style: GoogleFonts.outfit(
+                fontSize: 22,
+                fontWeight: FontWeight.bold,
+                color: tealColor,
+              ),
             ),
-          ),
-          const SizedBox(height: 20),
+            const SizedBox(height: 20),
 
-          // Route Summary Visualization
-          Container(
-            padding: const EdgeInsets.all(16),
-            decoration: BoxDecoration(
-              color: Colors.grey[50],
-              borderRadius: BorderRadius.circular(15),
-              border: Border.all(color: Colors.grey[200]!),
-            ),
-            child: Row(
-              children: [
-                Column(
-                  children: [
-                    const Icon(Icons.circle, size: 12, color: tealColor),
-                    Container(width: 2, height: 30, color: Colors.grey[300]),
-                    const Icon(
-                      Icons.location_on,
-                      size: 16,
-                      color: Colors.orange,
-                    ),
-                  ],
-                ),
-                const SizedBox(width: 15),
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
+            // Route Summary Visualization
+            Container(
+              padding: const EdgeInsets.all(16),
+              decoration: BoxDecoration(
+                color: Colors.grey[50],
+                borderRadius: BorderRadius.circular(15),
+                border: Border.all(color: Colors.grey[200]!),
+              ),
+              child: Row(
+                children: [
+                  Column(
                     children: [
-                      Text(
-                        widget.routeState.pickup,
-                        style: GoogleFonts.inter(
-                          fontSize: 14,
-                          fontWeight: FontWeight.w500,
-                        ),
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
-                      ),
-                      const SizedBox(height: 25),
-                      Text(
-                        widget.routeState.dropoff,
-                        style: GoogleFonts.inter(
-                          fontSize: 14,
-                          fontWeight: FontWeight.w500,
-                        ),
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
+                      const Icon(Icons.circle, size: 12, color: tealColor),
+                      Container(width: 2, height: 30, color: Colors.grey[300]),
+                      const Icon(
+                        Icons.location_on,
+                        size: 16,
+                        color: Colors.orange,
                       ),
                     ],
                   ),
-                ),
-              ],
+                  const SizedBox(width: 15),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          widget.routeState.pickup,
+                          style: GoogleFonts.inter(
+                            fontSize: 14,
+                            fontWeight: FontWeight.w500,
+                          ),
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                        const SizedBox(height: 25),
+                        Text(
+                          widget.routeState.dropoff,
+                          style: GoogleFonts.inter(
+                            fontSize: 14,
+                            fontWeight: FontWeight.w500,
+                          ),
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
             ),
-          ),
-          const SizedBox(height: 25),
+            const SizedBox(height: 25),
 
-          // Price Adjuster
-          Center(
-            child: Column(
-              children: [
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    _buildAdjustButton(Icons.remove, () => _adjustPrice(-50)),
-                    Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: 30),
-                      child: Text(
-                        '₦${_currentPrice.toInt()}',
-                        style: GoogleFonts.outfit(
-                          fontSize: 40,
-                          fontWeight: FontWeight.bold,
-                          color: tealColor,
+            // Price Adjuster
+            Center(
+              child: Column(
+                children: [
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      _buildAdjustButton(Icons.remove, () => _adjustPrice(-50)),
+                      Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: 30),
+                        child: Text(
+                          '₦${_currentPrice.toInt()}',
+                          style: GoogleFonts.outfit(
+                            fontSize: 40,
+                            fontWeight: FontWeight.bold,
+                            color: tealColor,
+                          ),
+                        ),
+                      ),
+                      _buildAdjustButton(Icons.add, () => _adjustPrice(50)),
+                    ],
+                  ),
+                  const SizedBox(height: 8),
+                  Text(
+                    'Recommended: ₦${widget.routeState.price}',
+                    style: GoogleFonts.inter(
+                      color: Colors.green[700],
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            const SizedBox(height: 25),
+
+            // Quick Notes
+            SizedBox(
+              height: 40,
+              child: ListView(
+                scrollDirection: Axis.horizontal,
+                children: _quickNotes.map((note) {
+                  final isSelected = _selectedNotes.contains(note);
+                  return Padding(
+                    padding: const EdgeInsets.only(right: 8),
+                    child: FilterChip(
+                      label: Text(note),
+                      selected: isSelected,
+                      onSelected: (val) {
+                        setState(() {
+                          val
+                              ? _selectedNotes.add(note)
+                              : _selectedNotes.remove(note);
+                        });
+                      },
+                      selectedColor: tealColor.withOpacity(0.1),
+                      checkmarkColor: tealColor,
+                      labelStyle: GoogleFonts.inter(
+                        fontSize: 12,
+                        color: isSelected ? tealColor : Colors.black87,
+                        fontWeight: isSelected
+                            ? FontWeight.bold
+                            : FontWeight.normal,
+                      ),
+                      shape: StadiumBorder(
+                        side: BorderSide(
+                          color: isSelected ? tealColor : Colors.grey[300]!,
                         ),
                       ),
                     ),
-                    _buildAdjustButton(Icons.add, () => _adjustPrice(50)),
-                  ],
-                ),
-                const SizedBox(height: 8),
-                Text(
-                  'Recommended: ₦${widget.routeState.price}',
-                  style: GoogleFonts.inter(
-                    color: Colors.green[700],
-                    fontWeight: FontWeight.w600,
-                  ),
-                ),
-              ],
-            ),
-          ),
-          const SizedBox(height: 25),
-
-          // Quick Notes
-          SizedBox(
-            height: 40,
-            child: ListView(
-              scrollDirection: Axis.horizontal,
-              children: _quickNotes.map((note) {
-                final isSelected = _selectedNotes.contains(note);
-                return Padding(
-                  padding: const EdgeInsets.only(right: 8),
-                  child: FilterChip(
-                    label: Text(note),
-                    selected: isSelected,
-                    onSelected: (val) {
-                      setState(() {
-                        val
-                            ? _selectedNotes.add(note)
-                            : _selectedNotes.remove(note);
-                      });
-                    },
-                    selectedColor: tealColor.withOpacity(0.1),
-                    checkmarkColor: tealColor,
-                    labelStyle: GoogleFonts.inter(
-                      fontSize: 12,
-                      color: isSelected ? tealColor : Colors.black87,
-                      fontWeight: isSelected
-                          ? FontWeight.bold
-                          : FontWeight.normal,
-                    ),
-                    shape: StadiumBorder(
-                      side: BorderSide(
-                        color: isSelected ? tealColor : Colors.grey[300]!,
-                      ),
-                    ),
-                  ),
-                );
-              }).toList(),
-            ),
-          ),
-          const SizedBox(height: 30),
-
-          // Action Button
-          ElevatedButton(
-            onPressed: () => widget.onConfirm(_currentPrice, _selectedNotes),
-            style: ElevatedButton.styleFrom(
-              backgroundColor: tealColor,
-              foregroundColor: Colors.white,
-              padding: const EdgeInsets.symmetric(vertical: 18),
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(15),
-              ),
-              elevation: 0,
-            ),
-            child: Text(
-              'REQUEST RIDE',
-              style: GoogleFonts.outfit(
-                fontSize: 18,
-                fontWeight: FontWeight.bold,
-                letterSpacing: 1,
+                  );
+                }).toList(),
               ),
             ),
-          ),
-          const SizedBox(height: 10),
-        ],
+            const SizedBox(height: 30),
+
+            // Action Button
+            ElevatedButton(
+              onPressed: () => widget.onConfirm(_currentPrice, _selectedNotes),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: tealColor,
+                foregroundColor: Colors.white,
+                padding: const EdgeInsets.symmetric(vertical: 18),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(15),
+                ),
+                elevation: 0,
+              ),
+              child: Text(
+                'REQUEST RIDE',
+                style: GoogleFonts.outfit(
+                  fontSize: 18,
+                  fontWeight: FontWeight.bold,
+                  letterSpacing: 1,
+                ),
+              ),
+            ),
+            const SizedBox(height: 10),
+          ],
+        ),
       ),
     );
   }

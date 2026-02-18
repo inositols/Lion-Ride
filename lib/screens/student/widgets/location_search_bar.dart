@@ -32,32 +32,38 @@ class LocationSearchBar extends StatelessWidget {
             Container(
               decoration: BoxDecoration(
                 color: Colors.white,
-                borderRadius: BorderRadius.circular(12),
-                boxShadow: const [
+                borderRadius: BorderRadius.circular(16),
+                boxShadow: [
                   BoxShadow(
-                    color: Colors.black12,
-                    blurRadius: 10,
-                    offset: Offset(0, 5),
+                    color: Colors.black.withOpacity(0.1),
+                    blurRadius: 20,
+                    offset: const Offset(0, 10),
                   ),
                 ],
               ),
               child: Column(
+                mainAxisSize: MainAxisSize.min,
                 children: [
                   TextField(
                     controller: controller,
+                    style: const TextStyle(
+                      fontSize: 16,
+                      fontWeight: FontWeight.w500,
+                    ),
                     decoration: InputDecoration(
                       hintText: 'Where to?',
+                      hintStyle: TextStyle(color: Colors.grey[400]),
                       prefixIcon: IconButton(
-                        icon: const Icon(Icons.menu),
+                        icon: const Icon(Icons.menu, color: Color(0xFF004D40)),
                         onPressed: onMenuTap,
                       ),
                       border: InputBorder.none,
                       contentPadding: const EdgeInsets.symmetric(
-                        vertical: 15,
+                        vertical: 18,
                       ),
                       suffixIcon: controller.text.isNotEmpty
                           ? IconButton(
-                              icon: const Icon(Icons.clear),
+                              icon: const Icon(Icons.clear, color: Colors.grey),
                               onPressed: onClear,
                             )
                           : null,
@@ -65,34 +71,55 @@ class LocationSearchBar extends StatelessWidget {
                     onChanged: onChanged,
                   ),
                   // Search Results List
-                  if (searchResults.isNotEmpty)
-                    Material(
-                      elevation: 5,
-                      borderRadius: BorderRadius.circular(12),
-                      child: Container(
-                        constraints: const BoxConstraints(
-                          maxHeight: 300,
-                        ),
-                        child: ListView.separated(
-                          shrinkWrap: true,
-                          padding: EdgeInsets.zero,
-                          itemCount: searchResults.length,
-                          separatorBuilder: (context, index) =>
-                              const Divider(height: 1),
-                          itemBuilder: (context, index) {
-                            final place = searchResults[index];
-                            return ListTile(
-                              leading: const Icon(
+                  if (searchResults.isNotEmpty) ...[
+                    const Divider(height: 1, thickness: 0.5),
+                    Container(
+                      constraints: const BoxConstraints(
+                        maxHeight: 250,
+                      ),
+                      child: ListView.separated(
+                        shrinkWrap: true,
+                        padding: EdgeInsets.zero,
+                        itemCount: searchResults.length,
+                        separatorBuilder: (context, index) =>
+                            Divider(height: 1, thickness: 0.5, indent: 60, color: Colors.grey[200]),
+                        itemBuilder: (context, index) {
+                          final place = searchResults[index];
+                          return ListTile(
+                            contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+                            leading: Container(
+                              padding: const EdgeInsets.all(8),
+                              decoration: BoxDecoration(
+                                color: const Color(0xFFFFC107).withOpacity(0.1),
+                                shape: BoxShape.circle,
+                              ),
+                              child: const Icon(
                                 Icons.location_on,
                                 color: Color(0xFFFFC107),
+                                size: 20,
                               ),
-                              title: Text(place.name),
-                              onTap: () => onSelectPlace(place),
-                            );
-                          },
-                        ),
+                            ),
+                            title: Text(
+                              place.name,
+                              style: const TextStyle(
+                                fontSize: 16,
+                                fontWeight: FontWeight.w400,
+                              ),
+                            ),
+                            subtitle: Text(
+                              'Nsukka, Nigeria',
+                              style: TextStyle(
+                                fontSize: 12,
+                                color: Colors.grey[500],
+                              ),
+                            ),
+                            onTap: () => onSelectPlace(place),
+                          );
+                        },
                       ),
                     ),
+                    const SizedBox(height: 8),
+                  ],
                 ],
               ),
             ),

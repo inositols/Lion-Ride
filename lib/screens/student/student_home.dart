@@ -115,21 +115,8 @@ class _StudentHomeState extends State<StudentHome> {
     if (authState is AuthAuthenticated) {
       final u = authState.user;
       if (!u.isPhoneVerified) {
-        return Scaffold(
-          body: RepositoryProvider(
-            create: (context) => LocationRepository(),
-            child: MultiBlocProvider(
-              providers: [
-                BlocProvider(
-                  create: (context) => VerificationBloc(
-                    repository: VerificationRepository(),
-                    authBloc: context.read<AuthBloc>(),
-                  )..add(CheckVerificationStatus()),
-                ),
-              ],
-              child: const VerificationWizard(),
-            ),
-          ),
+        return const Scaffold(
+          body: VerificationWizard(),
         );
       }
     }
@@ -234,7 +221,11 @@ class _StudentHomeState extends State<StudentHome> {
                       ),
                     );
 
-                    for (var landmark in LocationRepository.mockLandmarks) {
+                    final landmarksToShow = (_searchController.text.isNotEmpty)
+                        ? state.searchResults
+                        : LocationRepository.mockLandmarks;
+
+                    for (var landmark in landmarksToShow) {
                       markers.add(
                         Marker(
                           markerId: MarkerId('landmark_${landmark.name}'),
@@ -246,8 +237,8 @@ class _StudentHomeState extends State<StudentHome> {
                           onTap: () {
                             _searchController.text = landmark.name;
                             context.read<LocationBloc>().add(
-                              SelectLocation(landmark),
-                            );
+                                  SelectLocation(landmark),
+                                );
                           },
                         ),
                       );
