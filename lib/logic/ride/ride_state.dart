@@ -24,10 +24,17 @@ class RideSearching extends RideState {
 class RideActive extends RideState {
   final RideModel ride;
   final GeoPoint? riderLocation;
-  const RideActive(this.ride, {this.riderLocation, super.nearbyRiders});
+  final RiderModel? acceptedRider;
+
+  const RideActive(
+    this.ride, {
+    this.riderLocation,
+    this.acceptedRider,
+    super.nearbyRiders,
+  });
 
   @override
-  List<Object?> get props => [ride, riderLocation, nearbyRiders];
+  List<Object?> get props => [ride, riderLocation, acceptedRider, nearbyRiders];
 }
 
 class RideLoading extends RideState {

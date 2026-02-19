@@ -1,5 +1,3 @@
-import 'package:geolocator/geolocator.dart';
-
 class PricingService {
   // Constants for Nsukka economy
   static const double baseFare = 200.0;
@@ -38,19 +36,19 @@ class PricingService {
   /// Benchmark check: Fada Agbo to Beach (~2.8km)
   /// (2.8 * 1.4) = 3.92km
   /// 200 + (3.92 * 110) = 200 + 431.2 = 631.2
-  /// Rounded to nearest 50 = 650? 
-  /// 
+  /// Rounded to nearest 50 = 650?
+  ///
   /// Wait, the user said "Fada Agbo Junction to Beach Junction (~2.8km) costs ₦500".
   /// Let's re-check the user's ground truth.
   /// If distance is 2.8km:
   /// (2.8 * 1.4) = 3.92km
   /// 200 + (3.92 * 110) = 631.2
   /// This rounds to 650.
-  /// 
+  ///
   /// If road factor is NOT applied before the cost:
   /// 200 + (2.8 * 110) = 200 + 308 = 508.
   /// This rounds to 500.
-  /// 
+  ///
   /// Ah! The user said: "Formula: rawPrice = baseFare + (distanceInKm * costPerKm)".
   /// And "Convert to km and multiply by 1.4 (Road Factor)".
   /// Does the "Road Factor" apply to the distance used in the formula?
@@ -59,14 +57,14 @@ class PricingService {
   /// Usually, mapping APIs return linear distance "as the crow flies", hence the multiplier.
   /// If 2.8km is the linear distance, then 2.8 * 1.4 = 3.92km.
   /// If 2.8km is the actual road distance, then road factor should not be applied.
-  /// 
+  ///
   /// Let's re-read: "Benchmark Trip: Fada Agbo Junction to Beach Junction (~2.8km) costs ₦500."
   /// If 2.8km is the distance input to `calculateFare` (already applying road factor or just straight from Geolocator?):
   /// "Convert to km and multiply by 1.4 (Road Factor)."
   /// If Geolocator says 2.8km, then road distance is 3.92.
   /// 200 + (3.92 * 110) = 631.2 -> 650.
-  /// 
-  /// If 2.8km is the distance AFTER applying 1.4? 
+  ///
+  /// If 2.8km is the distance AFTER applying 1.4?
   /// 2.0 * 1.4 = 2.8.
   /// 200 + (2.8 * 110) = 200 + 308 = 508 -> 500.
   /// This matches the ₦500 mark perfectly!

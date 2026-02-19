@@ -223,7 +223,7 @@ class _FaceLivenessScreenState extends State<FaceLivenessScreen> {
 
           // 3. Scanner UI Overlay
           ColorFiltered(
-            colorFilter: ColorFilter.mode(Colors.black.withOpacity(0.8), BlendMode.srcOut),
+            colorFilter: ColorFilter.mode(Colors.black.withValues(alpha: 0.8), BlendMode.srcOut),
             child: Stack(
               children: [
                 Container(decoration: const BoxDecoration(color: Colors.transparent)),
@@ -296,7 +296,7 @@ class FacePainter extends CustomPainter {
     final paint = Paint()
       ..style = PaintingStyle.stroke
       ..strokeWidth = 1.5
-      ..color = Colors.greenAccent.withOpacity(0.8);
+      ..color = Colors.greenAccent.withValues(alpha: 0.8);
 
     for (final face in faces) {
       Offset mapPoint(math.Point<int> point) {

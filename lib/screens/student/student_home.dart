@@ -136,9 +136,10 @@ class _StudentHomeState extends State<StudentHome> {
                     context: context,
                     barrierDismissible: false,
                     builder: (context) => DriverFoundNotification(
-                      driverName: 'Verified Rider', // In a real app, use state.rider.name
-                      rating: 4.8,
-                      vehicleInfo: 'Red Qlink - ENU 123 AB',
+                      driverName: state.acceptedRider?.name ?? 'Verified Rider',
+                      rating: 4.8, // Static for now, can be dynamic later
+                      vehicleInfo: 'UNN Campus Rider',
+                      plateNumber: state.acceptedRider?.plateNumber,
                       onTrackTap: () => Navigator.pop(context),
                     ),
                   );

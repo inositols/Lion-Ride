@@ -99,15 +99,29 @@ class RideBloc extends Bloc<RideEvent, RideState> {
     } else if (ride.status == 'ongoing' ||
         ride.status == 'accepted' ||
         ride.status == 'arrived') {
+      RiderModel? acceptedRider;
+      
+      // Try to find the rider in the nearby list first
+      try {
+        acceptedRider = state.nearbyRiders.firstWhere((r) => r.uid == ride.riderId);
+      } catch (_) {
+        // Not in nearby list, we'll need to fetch it if we want detailed info
+        // For now, we rely on the repository or a separate fetch if needed.
+      }
+
       // Start listening to rider location if not already
       if (ride.riderId != null && _locationSubscription == null) {
         _locationSubscription = _rideRepository
             .streamRiderLocation(ride.riderId!)
             .listen((pos) => add(RiderLocationUpdated(pos)));
       }
-      emit(RideActive(ride,
-          riderLocation: _currentRiderLocation,
-          nearbyRiders: state.nearbyRiders));
+      
+      emit(RideActive(
+        ride,
+        riderLocation: _currentRiderLocation,
+        acceptedRider: acceptedRider,
+        nearbyRiders: state.nearbyRiders,
+      ));
     } else if (ride.status == 'completed' || ride.status == 'cancelled') {
       _locationSubscription?.cancel();
       _locationSubscription = null;

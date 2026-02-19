@@ -2,7 +2,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:equatable/equatable.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:logger/logger.dart';
-import '../../models/user_model.dart';
+import 'package:nsuride_mobile/models/base_user_model.dart';
 import '../../repositories/auth_repository.dart';
 import '../../core/services/notification_service.dart';
 import 'package:geolocator/geolocator.dart';
@@ -48,19 +48,23 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
     try {
       // Check current user directly for faster initial response
       final firebaseUser = FirebaseAuth.instance.currentUser;
-      _logger.d('Direct FirebaseAuth.instance.currentUser: ${firebaseUser?.uid ?? 'Null'}');
+      _logger.d(
+        'Direct FirebaseAuth.instance.currentUser: ${firebaseUser?.uid ?? 'Null'}',
+      );
 
       if (firebaseUser != null) {
         final profile = await _authRepository.getUserProfile(firebaseUser.uid);
         if (profile != null) {
           _logger.i('Profile found for UID: ${firebaseUser.uid}');
-          
+
           // Capture device data (location & FCM)
           await _captureAndSaveDeviceData(firebaseUser.uid);
 
           emit(AuthAuthenticated(profile));
         } else {
-          _logger.w('No profile found in Firestore for UID: ${firebaseUser.uid}');
+          _logger.w(
+            'No profile found in Firestore for UID: ${firebaseUser.uid}',
+          );
           emit(AuthUnauthenticated());
         }
       } else {
@@ -82,7 +86,7 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
     try {
       final user = await _authRepository.signIn(event.email, event.password);
       _logger.i('Login successful for UID: ${user.uid}');
-      
+
       // Capture device data (location & FCM)
       await _captureAndSaveDeviceData(user.uid);
 
@@ -108,10 +112,10 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
         plateNumber: event.plateNumber,
         unionNumber: event.unionNumber,
       );
-      
+
       // Capture device data (location & FCM)
       await _captureAndSaveDeviceData(user.uid);
-      
+
       emit(AuthAuthenticated(user));
     } catch (e) {
       emit(AuthError(e.toString()));
@@ -137,8 +141,8 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
         if (permission == LocationPermission.denied) {
           permission = await Geolocator.requestPermission();
         }
-        
-        if (permission == LocationPermission.whileInUse || 
+
+        if (permission == LocationPermission.whileInUse ||
             permission == LocationPermission.always) {
           Position position = await Geolocator.getCurrentPosition(
             desiredAccuracy: LocationAccuracy.high,
@@ -164,7 +168,10 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
       if (fcmToken != null) updates['fcm_token'] = fcmToken;
 
       if (updates.isNotEmpty) {
-        await FirebaseFirestore.instance.collection('users').doc(uid).update(updates);
+        await FirebaseFirestore.instance
+            .collection('users')
+            .doc(uid)
+            .update(updates);
         _logger.i('Firestore updated with device data');
       }
     } catch (e) {

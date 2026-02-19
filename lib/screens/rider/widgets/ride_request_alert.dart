@@ -48,11 +48,11 @@ class _RideRequestAlertState extends State<RideRequestAlert> with SingleTickerPr
     return Container(
       margin: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: tealColor.withOpacity(0.95),
+        color: tealColor.withValues(alpha: 0.95),
         borderRadius: BorderRadius.circular(24),
         boxShadow: [
           BoxShadow(
-            color: tealColor.withOpacity(0.4),
+            color: tealColor.withValues(alpha: 0.4),
             blurRadius: 20,
             spreadRadius: 5,
             offset: const Offset(0, 10),
@@ -68,7 +68,7 @@ class _RideRequestAlertState extends State<RideRequestAlert> with SingleTickerPr
               top: -50,
               child: CircleAvatar(
                 radius: 80,
-                backgroundColor: Colors.white.withOpacity(0.05),
+                backgroundColor: Colors.white.withValues(alpha: 0.05),
               ),
             ),
             Padding(
@@ -82,7 +82,7 @@ class _RideRequestAlertState extends State<RideRequestAlert> with SingleTickerPr
                     child: Container(
                       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
                       decoration: BoxDecoration(
-                        color: Colors.white.withOpacity(0.2),
+                        color: Colors.white.withValues(alpha: 0.2),
                         borderRadius: BorderRadius.circular(30),
                       ),
                       child: Row(
@@ -138,7 +138,7 @@ class _RideRequestAlertState extends State<RideRequestAlert> with SingleTickerPr
                   Container(
                     padding: const EdgeInsets.all(16),
                     decoration: BoxDecoration(
-                      color: Colors.white.withOpacity(0.08),
+                      color: Colors.white.withValues(alpha: 0.08),
                       borderRadius: BorderRadius.circular(15),
                     ),
                     child: Column(

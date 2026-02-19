@@ -6,6 +6,7 @@ class DriverFoundNotification extends StatelessWidget {
   final String driverName;
   final double rating;
   final String vehicleInfo;
+  final String? plateNumber;
   final VoidCallback onTrackTap;
 
   const DriverFoundNotification({
@@ -13,6 +14,7 @@ class DriverFoundNotification extends StatelessWidget {
     required this.driverName,
     required this.rating,
     required this.vehicleInfo,
+    this.plateNumber,
     required this.onTrackTap,
   });
 
@@ -32,7 +34,7 @@ class DriverFoundNotification extends StatelessWidget {
               height: 120,
               width: 120,
               decoration: BoxDecoration(
-                color: Colors.green.withOpacity(0.1),
+                color: Colors.green.withValues(alpha: 0.1),
                 shape: BoxShape.circle,
               ),
               child: const Center(
@@ -78,7 +80,7 @@ class DriverFoundNotification extends StatelessWidget {
                     width: 60,
                     height: 60,
                     decoration: BoxDecoration(
-                      color: tealColor.withOpacity(0.1),
+                      color: tealColor.withValues(alpha: 0.1),
                       shape: BoxShape.circle,
                     ),
                     child: const Icon(Icons.person, color: tealColor, size: 35),
@@ -121,7 +123,7 @@ class DriverFoundNotification extends StatelessWidget {
                width: double.infinity,
                padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 16),
                decoration: BoxDecoration(
-                 color: tealColor.withOpacity(0.05),
+                 color: tealColor.withValues(alpha: 0.05),
                  borderRadius: BorderRadius.circular(12),
                ),
                child: Row(
@@ -130,7 +132,7 @@ class DriverFoundNotification extends StatelessWidget {
                     const Icon(Icons.directions_bike, color: tealColor, size: 20),
                     const SizedBox(width: 10),
                     Text(
-                      vehicleInfo,
+                      plateNumber != null ? '$vehicleInfo • $plateNumber' : vehicleInfo,
                       style: GoogleFonts.outfit(
                         fontWeight: FontWeight.w600,
                         color: tealColor,

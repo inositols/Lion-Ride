@@ -182,7 +182,7 @@ class _NegotiationSheetState extends State<NegotiationSheet> {
                               : _selectedNotes.remove(note);
                         });
                       },
-                      selectedColor: tealColor.withOpacity(0.1),
+                      selectedColor: tealColor.withValues(alpha: 0.1),
                       checkmarkColor: tealColor,
                       labelStyle: GoogleFonts.inter(
                         fontSize: 12,

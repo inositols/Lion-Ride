@@ -2,16 +2,14 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import '../../logic/auth/auth_bloc.dart';
+import '../../models/rider_model.dart';
 import '../../logic/ride/ride_bloc.dart';
-import '../../models/ride_model.dart';
 import 'dart:async';
 import 'package:geolocator/geolocator.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import '../wallet/wallet_screen.dart';
 import '../shared/ride_history_screen.dart';
 import '../verification/verification_wizard.dart';
-import '../../logic/verification/verification_bloc.dart';
-import '../../repositories/verification_repository.dart';
 import '../../core/widgets/global_error_listener.dart';
 import 'widgets/rider_status_card.dart';
 import 'widgets/rider_earnings_card.dart';
@@ -79,7 +77,7 @@ class _RiderHomeState extends State<RiderHome> {
           final user = authState.user;
 
           // Security Check: Enforce Verification Flow
-          if (!user.isVerified) {
+          if (user is RiderModel && !user.isVerified) {
             return const VerificationWizard();
           }
 

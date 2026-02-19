@@ -4,6 +4,8 @@ import 'package:equatable/equatable.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import '../../repositories/verification_repository.dart';
 import '../auth/auth_bloc.dart';
+import '../../models/base_user_model.dart';
+import '../../models/rider_model.dart';
 
 // --- EVENTS ---
 
@@ -247,14 +249,16 @@ class VerificationBloc extends Bloc<VerificationEvent, VerificationState> {
         }
 
         // Riders need full verification
-        if (!u.isFaceVerified) {
-          emit(VerificationStep2Face());
-        } else if (!u.documentsUploaded) {
-          emit(VerificationStep3Docs());
-        } else if (u.guarantorName == null) {
-          emit(VerificationStep4Guarantor());
-        } else {
-          emit(VerificationPendingApproval());
+        if (u is RiderModel) {
+          if (!u.isFaceVerified) {
+            emit(VerificationStep2Face());
+          } else if (!u.documentsUploaded) {
+            emit(VerificationStep3Docs());
+          } else if (u.guarantorName == null) {
+            emit(VerificationStep4Guarantor());
+          } else {
+            emit(VerificationPendingApproval());
+          }
         }
       }
     }

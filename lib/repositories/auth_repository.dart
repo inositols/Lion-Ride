@@ -57,6 +57,14 @@ class AuthRepository {
     String? plateNumber,
     String? unionNumber,
   }) async {
+    if (role == 'rider') {
+      if (plateNumber == null || plateNumber.trim().isEmpty) {
+        throw 'Plate number is required for riders.';
+      }
+      if (unionNumber == null || unionNumber.trim().isEmpty) {
+        throw 'Association/Union number is required for riders.';
+      }
+    }
     try {
       final userCredential = await _firebaseAuth.createUserWithEmailAndPassword(
         email: email,

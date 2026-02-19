@@ -93,8 +93,8 @@ class _OnboardingScreenState extends State<OnboardingScreen> with TickerProvider
                           begin: Alignment.topCenter,
                           end: Alignment.bottomCenter,
                           colors: [
-                            Colors.black.withOpacity(0.2),
-                            _pages[_currentPage].color.withOpacity(0.8),
+                            Colors.black.withValues(alpha: 0.2),
+                            _pages[_currentPage].color.withValues(alpha: 0.8),
                             _pages[_currentPage].color,
                           ],
                           stops: const [0.0, 0.6, 1.0],
@@ -132,7 +132,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> with TickerProvider
                         child: Text(
                           'SKIP',
                           style: GoogleFonts.inter(
-                            color: Colors.white.withOpacity(0.7),
+                            color: Colors.white.withValues(alpha: 0.7),
                             fontWeight: FontWeight.w600,
                             fontSize: 12,
                             letterSpacing: 1.5,
@@ -175,7 +175,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> with TickerProvider
                                 child: Text(
                                   _pages[index].subtitle,
                                   style: GoogleFonts.inter(
-                                    color: Colors.yellowAccent.withOpacity(0.9),
+                                    color: Colors.yellowAccent.withValues(alpha: 0.9),
                                     fontSize: 12,
                                     fontWeight: FontWeight.w800,
                                     letterSpacing: 4,
@@ -206,7 +206,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> with TickerProvider
                                   borderRadius: BorderRadius.circular(30),
                                   boxShadow: [
                                     BoxShadow(
-                                      color: Colors.black.withOpacity(0.2),
+                                      color: Colors.black.withValues(alpha: 0.2),
                                       blurRadius: 40,
                                       offset: const Offset(0, 20),
                                     ),
@@ -230,17 +230,17 @@ class _OnboardingScreenState extends State<OnboardingScreen> with TickerProvider
                                   padding: const EdgeInsets.all(24),
                                   width: double.infinity,
                                   decoration: BoxDecoration(
-                                    color: Colors.white.withOpacity(0.1),
+                                    color: Colors.white.withValues(alpha: 0.1),
                                     borderRadius: BorderRadius.circular(24),
                                     border: Border.all(
-                                      color: Colors.white.withOpacity(0.2),
+                                      color: Colors.white.withValues(alpha: 0.2),
                                     ),
                                   ),
                                   child: Text(
                                     _pages[index].description,
                                     style: GoogleFonts.inter(
                                       fontSize: 16,
-                                      color: Colors.white.withOpacity(0.9),
+                                      color: Colors.white.withValues(alpha: 0.9),
                                       height: 1.6,
                                       letterSpacing: 0.2,
                                     ),
@@ -273,7 +273,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> with TickerProvider
                             decoration: BoxDecoration(
                               color: _currentPage == index
                                   ? Colors.yellowAccent
-                                  : Colors.white.withOpacity(0.3),
+                                  : Colors.white.withValues(alpha: 0.3),
                               borderRadius: BorderRadius.circular(2),
                             ),
                           ),
@@ -301,7 +301,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> with TickerProvider
                             borderRadius: BorderRadius.circular(32),
                             boxShadow: [
                               BoxShadow(
-                                color: Colors.black.withOpacity(0.2),
+                                color: Colors.black.withValues(alpha: 0.2),
                                 blurRadius: 20,
                                 offset: const Offset(0, 10),
                               ),

@@ -100,7 +100,7 @@ class SafetyToolkitWidget extends StatelessWidget {
   }) {
     return ListTile(
       leading: CircleAvatar(
-        backgroundColor: color.withOpacity(0.1),
+        backgroundColor: color.withValues(alpha: 0.1),
         child: Icon(icon, color: color),
       ),
       title: Text(label, style: const TextStyle(fontWeight: FontWeight.w500)),

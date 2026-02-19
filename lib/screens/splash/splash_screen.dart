@@ -77,8 +77,8 @@ class _SplashScreenState extends State<SplashScreen>
                   begin: Alignment.topCenter,
                   end: Alignment.bottomCenter,
                   colors: [
-                    const Color(0xFF004D40).withOpacity(0.7),
-                    const Color(0xFF00251A).withOpacity(0.95),
+                    const Color(0xFF004D40).withValues(alpha: 0.7),
+                    const Color(0xFF00251A).withValues(alpha: 0.95),
                   ],
                 ),
               ),
@@ -108,12 +108,12 @@ class _SplashScreenState extends State<SplashScreen>
                       shape: BoxShape.circle,
                       boxShadow: [
                         BoxShadow(
-                          color: Colors.black.withOpacity(0.4),
+                          color: Colors.black.withValues(alpha: 0.4),
                           blurRadius: 30,
                           spreadRadius: 5,
                         ),
                         BoxShadow(
-                          color: const Color(0xFF004D40).withOpacity(0.5),
+                          color: const Color(0xFF004D40).withValues(alpha: 0.5),
                           blurRadius: 15,
                         ),
                       ],
@@ -153,7 +153,7 @@ class _SplashScreenState extends State<SplashScreen>
                         style: _safeTextStyle(GoogleFonts.inter(
                           fontSize: 12,
                           fontWeight: FontWeight.w500,
-                          color: Colors.white.withOpacity(0.7),
+                          color: Colors.white.withValues(alpha: 0.7),
                           letterSpacing: 4.0,
                         )),
                       ),

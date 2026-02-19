@@ -112,7 +112,7 @@ class NearbyRidersSheet extends StatelessWidget {
                         leading: CircleAvatar(
                           backgroundColor: const Color(
                             0xFF004D40,
-                          ).withOpacity(0.1),
+                          ).withValues(alpha: 0.1),
                           child: Text(
                             rider.name.substring(0, 1).toUpperCase(),
                             style: const TextStyle(

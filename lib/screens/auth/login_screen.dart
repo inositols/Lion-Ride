@@ -114,8 +114,8 @@ class _LoginScreenState extends State<LoginScreen> {
                   begin: Alignment.topCenter,
                   end: Alignment.bottomCenter,
                   colors: [
-                    Colors.black.withOpacity(0.3),
-                    Colors.black.withOpacity(0.7),
+                    Colors.black.withValues(alpha: 0.3),
+                    Colors.black.withValues(alpha: 0.7),
                   ],
                 ),
               ),
@@ -151,7 +151,7 @@ class _LoginScreenState extends State<LoginScreen> {
                             letterSpacing: 1.5,
                             shadows: [
                               Shadow(
-                                color: Colors.black.withOpacity(0.3),
+                                color: Colors.black.withValues(alpha: 0.3),
                                 blurRadius: 10,
                                 offset: const Offset(0, 5),
                               ),
@@ -164,7 +164,7 @@ class _LoginScreenState extends State<LoginScreen> {
                           _isLogin ? 'Welcome Back!' : 'Join the Pride',
                           style: GoogleFonts.inter(
                             fontSize: 16,
-                            color: Colors.white.withOpacity(0.8),
+                            color: Colors.white.withValues(alpha: 0.8),
                             fontWeight: FontWeight.w500,
                           ),
                         ),
@@ -177,10 +177,10 @@ class _LoginScreenState extends State<LoginScreen> {
                             child: Container(
                               padding: const EdgeInsets.all(32),
                               decoration: BoxDecoration(
-                                color: Colors.white.withOpacity(0.15),
+                                color: Colors.white.withValues(alpha: 0.15),
                                 borderRadius: BorderRadius.circular(30),
                                 border: Border.all(
-                                  color: Colors.white.withOpacity(0.2),
+                                  color: Colors.white.withValues(alpha: 0.2),
                                   width: 1.5,
                                 ),
                               ),
@@ -220,7 +220,7 @@ class _LoginScreenState extends State<LoginScreen> {
                                       _buildTextField(
                                         controller: _plateNumberController,
                                         label: 'Plate Number (e.g. ENU-123-AB)',
-                                        icon: Icons.apps_outage_outlined,
+                                        icon: Icons.badge_outlined,
                                       ),
                                       const SizedBox(height: 16),
                                       _buildTextField(
@@ -339,18 +339,18 @@ class _LoginScreenState extends State<LoginScreen> {
       style: const TextStyle(color: Colors.white),
       decoration: InputDecoration(
         labelText: label,
-        labelStyle: TextStyle(color: Colors.white.withOpacity(0.7)),
-        prefixIcon: Icon(icon, color: Colors.white.withOpacity(0.7)),
+        labelStyle: TextStyle(color: Colors.white.withValues(alpha: 0.7)),
+        prefixIcon: Icon(icon, color: Colors.white.withValues(alpha: 0.7)),
         enabledBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(16),
-          borderSide: BorderSide(color: Colors.white.withOpacity(0.3)),
+          borderSide: BorderSide(color: Colors.white.withValues(alpha: 0.3)),
         ),
         focusedBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(16),
           borderSide: const BorderSide(color: Colors.white),
         ),
         filled: true,
-        fillColor: Colors.white.withOpacity(0.05),
+        fillColor: Colors.white.withValues(alpha: 0.05),
       ),
     );
   }
@@ -363,10 +363,10 @@ class _LoginScreenState extends State<LoginScreen> {
         duration: const Duration(milliseconds: 200),
         padding: const EdgeInsets.symmetric(vertical: 12),
         decoration: BoxDecoration(
-          color: isSelected ? Colors.white : Colors.white.withOpacity(0.1),
+          color: isSelected ? Colors.white : Colors.white.withValues(alpha: 0.1),
           borderRadius: BorderRadius.circular(12),
           border: Border.all(
-            color: isSelected ? Colors.white : Colors.white.withOpacity(0.2),
+            color: isSelected ? Colors.white : Colors.white.withValues(alpha: 0.2),
           ),
         ),
         child: Column(
