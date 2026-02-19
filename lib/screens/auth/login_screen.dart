@@ -15,6 +15,7 @@ class _LoginScreenState extends State<LoginScreen> {
   final _emailController = TextEditingController();
   final _passwordController = TextEditingController();
   final _nameController = TextEditingController();
+  final _plateNumberController = TextEditingController();
   bool _isLogin = true;
   String _role = 'student';
 
@@ -31,6 +32,7 @@ class _LoginScreenState extends State<LoginScreen> {
     _emailController.dispose();
     _passwordController.dispose();
     _nameController.dispose();
+    _plateNumberController.dispose();
     super.dispose();
   }
 
@@ -38,6 +40,7 @@ class _LoginScreenState extends State<LoginScreen> {
     final email = _emailController.text.trim();
     final password = _passwordController.text.trim();
     final name = _nameController.text.trim();
+    final plateNumber = _plateNumberController.text.trim();
 
     debugPrint('LoginScreen: _submit triggered. Email: $email, IsLogin: $_isLogin');
 
@@ -64,6 +67,7 @@ class _LoginScreenState extends State<LoginScreen> {
               password: password,
               name: name,
               role: _role,
+              plateNumber: _role == 'rider' ? plateNumber : null,
             ),
           );
     }
@@ -180,12 +184,20 @@ class _LoginScreenState extends State<LoginScreen> {
                                     keyboardType: TextInputType.emailAddress,
                                   ),
                                   const SizedBox(height: 16),
-                                  _buildTextField(
-                                    controller: _passwordController,
-                                    label: 'Password',
-                                    icon: Icons.lock_outline,
-                                    obscureText: true,
-                                  ),
+                                    _buildTextField(
+                                      controller: _passwordController,
+                                      label: 'Password',
+                                      icon: Icons.lock_outline,
+                                      obscureText: true,
+                                    ),
+                                    if (!_isLogin && _role == 'rider') ...[
+                                      const SizedBox(height: 16),
+                                      _buildTextField(
+                                        controller: _plateNumberController,
+                                        label: 'Plate Number (e.g. ENU-123-AB)',
+                                        icon: Icons.apps_outage_outlined,
+                                      ),
+                                    ],
                                   if (!_isLogin) ...[
                                     const SizedBox(height: 24),
                                     Text(

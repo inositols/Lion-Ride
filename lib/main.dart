@@ -14,10 +14,21 @@ import 'logic/verification/verification_bloc.dart';
 import 'root_wrapper.dart';
 import 'core/theme/app_theme.dart';
 import 'firebase_options.dart';
+import 'package:firebase_messaging/firebase_messaging.dart';
+import 'core/services/notification_service.dart';
+
+final GlobalKey<NavigatorState> navigatorKey = GlobalKey<NavigatorState>();
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
+  
+  // Initialize Notifications
+  final notificationService = NotificationService();
+  await notificationService.initialize();
+  
+  // Set Background Handler
+  FirebaseMessaging.onBackgroundMessage(NotificationService.backgroundHandler);
 
   final authRepository = AuthRepository();
   final locationRepository = LocationRepository();
@@ -93,6 +104,7 @@ class MyApp extends StatelessWidget {
           ),
         ],
         child: MaterialApp(
+          navigatorKey: navigatorKey,
           title: 'Lion Ride',
           debugShowCheckedModeBanner: false,
           theme: AppTheme.lightTheme,

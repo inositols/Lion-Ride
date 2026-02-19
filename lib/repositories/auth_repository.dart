@@ -51,6 +51,7 @@ class AuthRepository {
     required String password,
     required String name,
     required String role,
+    String? plateNumber,
   }) async {
     try {
       final userCredential = await _firebaseAuth.createUserWithEmailAndPassword(
@@ -63,6 +64,7 @@ class AuthRepository {
         name: name,
         email: email,
         role: role,
+        plateNumber: plateNumber,
       );
 
       await _firestore
@@ -81,6 +83,19 @@ class AuthRepository {
   /// Sign Out
   Future<void> signOut() async {
     await _firebaseAuth.signOut();
+  }
+
+  /// Update FCM Token in Firestore
+  Future<void> updateFcmToken(String uid, String token) async {
+    try {
+      await _firestore.collection('users').doc(uid).update({
+        'fcm_token': token,
+      });
+    } catch (e) {
+      // We don't want to throw here as it's a background task usually,
+      // but we should log it.
+      print('Error updating FCM token: $e');
+    }
   }
 
   /// Stream of Auth State Changes

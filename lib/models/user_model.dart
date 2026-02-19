@@ -1,4 +1,5 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
+import '../core/services/encryption_service.dart';
 
 class UserModel {
   final String uid;
@@ -61,12 +62,12 @@ class UserModel {
       'is_face_verified': isFaceVerified,
       'documents_uploaded': documentsUploaded,
       'is_verified': isVerified,
-      'nin_url': ninUrl,
-      'bike_papers_url': bikePapersUrl,
+      'nin_url': EncryptionService.encrypt(ninUrl),
+      'bike_papers_url': EncryptionService.encrypt(bikePapersUrl),
       'guarantor_name': guarantorName,
-      'guarantor_phone': guarantorPhone,
-      'phone_number': phoneNumber,
-      'plate_number': plateNumber,
+      'guarantor_phone': EncryptionService.encrypt(guarantorPhone),
+      'phone_number': EncryptionService.encrypt(phoneNumber),
+      'plate_number': EncryptionService.encrypt(plateNumber),
       'union_number': unionNumber,
     };
   }
@@ -85,12 +86,12 @@ class UserModel {
       isFaceVerified: map['is_face_verified'] ?? false,
       documentsUploaded: map['documents_uploaded'] ?? false,
       isVerified: map['is_verified'] ?? false,
-      ninUrl: map['nin_url'],
-      bikePapersUrl: map['bike_papers_url'],
+      ninUrl: EncryptionService.decrypt(map['nin_url']),
+      bikePapersUrl: EncryptionService.decrypt(map['bike_papers_url']),
       guarantorName: map['guarantor_name'],
-      guarantorPhone: map['guarantor_phone'],
-      phoneNumber: map['phone_number'],
-      plateNumber: map['plate_number'],
+      guarantorPhone: EncryptionService.decrypt(map['guarantor_phone']),
+      phoneNumber: EncryptionService.decrypt(map['phone_number']),
+      plateNumber: EncryptionService.decrypt(map['plate_number']),
       unionNumber: map['union_number'],
     );
   }
