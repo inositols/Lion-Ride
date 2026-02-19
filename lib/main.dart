@@ -94,6 +94,7 @@ class MyApp extends StatelessWidget {
             create: (context) => RideBloc(
               rideRepository: rideRepository,
               authRepository: authRepository,
+              walletRepository: walletRepository,
             ),
           ),
           BlocProvider(

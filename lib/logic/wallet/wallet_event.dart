@@ -24,12 +24,13 @@ class InitiateDeposit extends WalletEvent {
   List<Object?> get props => [context, amount, email];
 }
 
-class WithdrawFunds extends WalletEvent {
+class WithdrawFundsRequested extends WalletEvent {
   final double amount;
-  const WithdrawFunds(this.amount);
+  final String bankDetails;
+  const WithdrawFundsRequested({required this.amount, required this.bankDetails});
 
   @override
-  List<Object?> get props => [amount];
+  List<Object?> get props => [amount, bankDetails];
 }
 
 // Internal event for real-time balance updates

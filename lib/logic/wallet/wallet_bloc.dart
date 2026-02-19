@@ -27,6 +27,7 @@ class WalletBloc extends Bloc<WalletEvent, WalletState> {
         super(WalletInitial()) {
     on<LoadWallet>(_onLoadWallet);
     on<InitiateDeposit>(_onInitiateDeposit);
+    on<WithdrawFundsRequested>(_onWithdrawFundsRequested);
     on<_WalletUpdated>(_onWalletUpdated);
     on<_WalletErrorOccurred>(_onWalletErrorOccurred);
   }
@@ -167,6 +168,26 @@ class WalletBloc extends Bloc<WalletEvent, WalletState> {
       }
     } catch (e) {
       emit(WalletError(e.toString()));
+    }
+  }
+
+  Future<void> _onWithdrawFundsRequested(
+    WithdrawFundsRequested event,
+    Emitter<WalletState> emit,
+  ) async {
+    final firebaseUser = await _authRepository.user.first;
+    if (firebaseUser == null) return;
+
+    emit(PaymentProcessing());
+    try {
+      await _walletRepository.processWithdrawal(
+        riderId: firebaseUser.uid,
+        amount: event.amount,
+        bankDetails: event.bankDetails,
+      );
+      emit(const PaymentSuccess('Withdrawal request logged successfully!'));
+    } catch (e) {
+      emit(PaymentFailure(e.toString()));
     }
   }
 

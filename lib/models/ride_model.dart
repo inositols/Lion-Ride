@@ -13,6 +13,8 @@ class RideModel {
   final double cost;
   final String status; // 'searching' | 'ongoing' | 'completed' | 'cancelled'
   final DateTime timestamp;
+  final bool isPaid;
+  final String paymentMethod; // 'wallet' | 'cash'
 
   RideModel({
     required this.rideId,
@@ -27,6 +29,8 @@ class RideModel {
     required this.cost,
     required this.status,
     required this.timestamp,
+    this.isPaid = false,
+    this.paymentMethod = 'wallet',
   });
 
   Map<String, dynamic> toMap() {
@@ -41,6 +45,8 @@ class RideModel {
       'cost': cost,
       'status': status,
       'timestamp': Timestamp.fromDate(timestamp),
+      'is_paid': isPaid,
+      'payment_method': paymentMethod,
     };
   }
 
@@ -61,6 +67,8 @@ class RideModel {
       cost: (map['cost'] ?? 0.0).toDouble(),
       status: map['status'] ?? 'searching',
       timestamp: (map['timestamp'] as Timestamp).toDate(),
+      isPaid: map['is_paid'] ?? false,
+      paymentMethod: map['payment_method'] ?? 'wallet',
     );
   }
 }

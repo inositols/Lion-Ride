@@ -8,6 +8,7 @@ import '../../models/base_user_model.dart';
 import '../../models/rider_model.dart';
 import '../../repositories/ride_repository.dart';
 import '../../repositories/auth_repository.dart';
+import '../../repositories/wallet_repository.dart';
 
 part 'ride_event.dart';
 part 'ride_state.dart';
@@ -15,6 +16,7 @@ part 'ride_state.dart';
 class RideBloc extends Bloc<RideEvent, RideState> {
   final RideRepository _rideRepository;
   final AuthRepository _authRepository;
+  final WalletRepository _walletRepository;
   StreamSubscription? _rideSubscription;
   StreamSubscription? _openRidesSubscription;
   StreamSubscription? _locationSubscription;
@@ -27,8 +29,10 @@ class RideBloc extends Bloc<RideEvent, RideState> {
   RideBloc({
     required RideRepository rideRepository,
     required AuthRepository authRepository,
+    required WalletRepository walletRepository,
   }) : _rideRepository = rideRepository,
        _authRepository = authRepository,
+       _walletRepository = walletRepository,
        super(RideInitial()) {
     // Student Handlers
     on<RequestRide>(_onRequestRide);
@@ -191,7 +195,26 @@ class RideBloc extends Bloc<RideEvent, RideState> {
     Emitter<RideState> emit,
   ) async {
     try {
+      // 1. Fetch latest ride data
+      final rideDoc = await FirebaseFirestore.instance.collection('rides').doc(event.rideId).get();
+      if (!rideDoc.exists) throw 'Ride not found';
+      final ride = RideModel.fromMap(rideDoc.data()!, rideDoc.id);
+
+      // 2. Process payment if method is 'wallet'
+      if (ride.paymentMethod == 'wallet') {
+        try {
+          // Atomic Transactions with fees
+          await _walletRepository.processRidePayment(ride);
+        } catch (e) {
+          // If wallet payment fails (e.g. Insufficient funds), we DO NOT mark completed
+          emit(RideError('Payment failed: $e', nearbyRiders: state.nearbyRiders));
+          return;
+        }
+      }
+
+      // 3. Update status to completed (For Cash or Successful Wallet Payment)
       await _rideRepository.updateRideStatus(event.rideId, 'completed');
+      
       _rideSubscription?.cancel();
       if (_isRiderOnline) {
         emit(RiderBrowsing(nearbyRiders: state.nearbyRiders));

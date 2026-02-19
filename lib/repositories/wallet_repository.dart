@@ -2,6 +2,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter_paystack_max/flutter_paystack_max.dart';
 import 'package:flutter/material.dart';
 import '../models/transaction_model.dart';
+import '../models/ride_model.dart';
 import 'package:uuid/uuid.dart';
 
 class WalletRepository {
@@ -69,6 +70,153 @@ class WalletRepository {
     }
   }
 
+  /// Atomic Transaction: Transfer funds from Student to Rider and track Platform Fee.
+  /// Ensures all parties are updated or none (atomic safety).
+  Future<void> processRidePayment(RideModel ride) async {
+    final studentRef = _firestore.collection('users').doc(ride.studentId);
+    final riderRef = _firestore.collection('users').doc(ride.riderId);
+    final platformRef = _firestore.collection('system').doc('platform_fees');
+    final rideRef = _firestore.collection('rides').doc(ride.rideId);
+
+    return _firestore.runTransaction((transaction) async {
+      // 1. READ phase: Atomic read of current balances
+      DocumentSnapshot studentSnap = await transaction.get(studentRef);
+      DocumentSnapshot riderSnap = await transaction.get(riderRef);
+
+      if (!studentSnap.exists) throw 'Student profile not found.';
+      if (!riderSnap.exists) throw 'Rider profile not found.';
+
+      double studentBalance = (studentSnap.get('wallet_balance') ?? 0.0).toDouble();
+      double rideCost = ride.cost;
+      double totalDebit = rideCost + 20;
+
+      // 2. VALIDATE phase: Immediate rollback if student cannot afford fare + fee
+      if (studentBalance < totalDebit) {
+        throw 'Insufficient funds. ₦$totalDebit required for this ride.';
+      }
+
+      // 3. WRITE phase: Update balances atomically using FieldValue.increment
+      // Decrement Student by Total Amount (Fare + Fee)
+      transaction.update(studentRef, {
+        'wallet_balance': FieldValue.increment(-totalDebit),
+      });
+      // Increment Rider by Fare ONLY
+      transaction.update(riderRef, {
+        'wallet_balance': FieldValue.increment(rideCost),
+      });
+
+      // Update centralized Platform Earnings by the ₦20 Transfer Fee
+      transaction.set(
+        platformRef,
+        {'total_earnings': FieldValue.increment(20)},
+        SetOptions(merge: true),
+      );
+
+      // Mark the Ride as Paid atomically with the wallet movement
+      transaction.update(rideRef, {'is_paid': true});
+
+      // 4. LOG Transactions for audit and visibility in user transaction history
+      final studentRideLog = TransactionModel(
+        txId: const Uuid().v4(),
+        userId: ride.studentId,
+        type: 'debit',
+        amount: rideCost,
+        referenceId: ride.rideId,
+        timestamp: DateTime.now(),
+        description: 'Ride Payment',
+      );
+      final studentFeeLog = TransactionModel(
+        txId: const Uuid().v4(),
+        userId: ride.studentId,
+        type: 'debit',
+        amount: 20,
+        referenceId: ride.rideId,
+        timestamp: DateTime.now(),
+        description: 'Transfer Fee',
+      );
+      final riderLog = TransactionModel(
+        txId: const Uuid().v4(),
+        userId: ride.riderId!,
+        type: 'credit',
+        amount: rideCost,
+        referenceId: ride.rideId,
+        timestamp: DateTime.now(),
+        description: 'Ride Earnings',
+      );
+
+      transaction.set(_firestore.collection('transactions').doc(studentRideLog.txId), studentRideLog.toMap());
+      transaction.set(_firestore.collection('transactions').doc(studentFeeLog.txId), studentFeeLog.toMap());
+      transaction.set(_firestore.collection('transactions').doc(riderLog.txId), riderLog.toMap());
+    });
+  }
+
+  /// Process bank withdrawal with a ₦20 fee
+  /// Atomic Transaction ensuring the Rider balance and Platform fees are updated together.
+  Future<void> processWithdrawal({
+    required String riderId,
+    required double amount,
+    required String bankDetails,
+  }) async {
+    final riderRef = _firestore.collection('users').doc(riderId);
+    final platformRef = _firestore.collection('system').doc('platform_fees');
+
+    return _firestore.runTransaction((transaction) async {
+      // 1. READ: Atomic snapshot of rider balance
+      DocumentSnapshot riderSnap = await transaction.get(riderRef);
+      if (!riderSnap.exists) throw 'Profile not found.';
+
+      double riderBalance = (riderSnap.get('wallet_balance') ?? 0.0).toDouble();
+      double totalDebit = amount + 20;
+
+      // 2. VALIDATE: Ensure rider has sufficient funds for amount + fee
+      if (riderBalance < totalDebit) {
+        throw 'Insufficient funds. ₦$totalDebit required (Amount: ₦$amount + Fee: ₦20).';
+      }
+
+      // 3. WRITE: Update balances atomically using increment
+      transaction.update(riderRef, {
+        'wallet_balance': FieldValue.increment(-totalDebit),
+      });
+      transaction.set(
+        platformRef,
+        {'total_earnings': FieldValue.increment(20)},
+        SetOptions(merge: true),
+      );
+
+      // 4. LOG Transactions for audit trail
+      final String refId = 'WITHDRAW_${DateTime.now().millisecondsSinceEpoch}';
+      
+      final withdrawalLog = {
+        'tx_id': const Uuid().v4(),
+        'user_id': riderId,
+        'type': 'debit',
+        'amount': amount,
+        'reference_id': refId,
+        'timestamp': FieldValue.serverTimestamp(),
+        'description': 'Bank Withdrawal Request',
+        'status': 'pending', // Important for Cloud Function triggers
+        'metadata': {
+          'bank_details': bankDetails,
+          'version': 'v1',
+          'external_provider': 'paystack'
+        }
+      };
+
+      final feeLog = TransactionModel(
+        txId: const Uuid().v4(),
+        userId: riderId,
+        type: 'debit',
+        amount: 20,
+        referenceId: refId,
+        timestamp: DateTime.now(),
+        description: 'Withdrawal Fee',
+      );
+
+      transaction.set(_firestore.collection('transactions').doc(withdrawalLog['tx_id'] as String), withdrawalLog);
+      transaction.set(_firestore.collection('transactions').doc(feeLog.txId), feeLog.toMap());
+    });
+  }
+
   /// Atomic Transaction: Create transaction log AND increment user balance
   Future<void> processSuccessfulDeposit({
     required String userId,
@@ -96,12 +244,9 @@ class WalletRepository {
         throw 'User profile not found.';
       }
 
-      double currentBalance = (userSnap.get('wallet_balance') ?? 0.0)
-          .toDouble();
-
       // 2. Update user balance AND tx ID (for security rules verification)
       transactionBatch.update(userRef, {
-        'wallet_balance': currentBalance + amount,
+        'wallet_balance': FieldValue.increment(amount),
         'last_tx_id': txId,
       });
 
