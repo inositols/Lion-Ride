@@ -1,6 +1,8 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
-import '../models/user_model.dart';
+import '../models/base_user_model.dart';
+import '../models/student_model.dart';
+import '../models/rider_model.dart';
 
 class AuthRepository {
   final FirebaseAuth _firebaseAuth;
@@ -13,11 +15,11 @@ class AuthRepository {
         _firestore = firestore ?? FirebaseFirestore.instance;
 
   /// Get the current authenticated user's profile from Firestore
-  Future<UserModel?> getUserProfile(String uid) async {
+  Future<BaseUserModel?> getUserProfile(String uid) async {
     try {
       final doc = await _firestore.collection('users').doc(uid).get();
       if (doc.exists) {
-        return UserModel.fromMap(doc.data()!);
+        return BaseUserModel.fromMap(doc.data()!);
       }
       return null;
     } catch (e) {
@@ -26,7 +28,7 @@ class AuthRepository {
   }
 
   /// Sign In with Email and Password
-  Future<UserModel> signIn(String email, String password) async {
+  Future<BaseUserModel> signIn(String email, String password) async {
     try {
       final userCredential = await _firebaseAuth.signInWithEmailAndPassword(
         email: email,
@@ -46,12 +48,14 @@ class AuthRepository {
   }
 
   /// Sign Up with Email, Password, Name, and Role
-  Future<UserModel> signUp({
+  Future<BaseUserModel> signUp({
     required String email,
     required String password,
     required String name,
     required String role,
+    required String phoneNumber,
     String? plateNumber,
+    String? unionNumber,
   }) async {
     try {
       final userCredential = await _firebaseAuth.createUserWithEmailAndPassword(
@@ -59,13 +63,26 @@ class AuthRepository {
         password: password,
       );
 
-      final newUser = UserModel(
-        uid: userCredential.user!.uid,
-        name: name,
-        email: email,
-        role: role,
-        plateNumber: plateNumber,
-      );
+      BaseUserModel newUser;
+      if (role == 'rider') {
+        newUser = RiderModel(
+          uid: userCredential.user!.uid,
+          name: name,
+          email: email,
+          role: role,
+          phoneNumber: phoneNumber,
+          plateNumber: plateNumber,
+          unionNumber: unionNumber,
+        );
+      } else {
+        newUser = StudentModel(
+          uid: userCredential.user!.uid,
+          name: name,
+          email: email,
+          role: role,
+          phoneNumber: phoneNumber,
+        );
+      }
 
       await _firestore
           .collection('users')

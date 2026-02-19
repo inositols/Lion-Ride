@@ -35,7 +35,7 @@ class ListenToRideUpdate extends RideEvent {
 class MonitorNearbyRiders extends RideEvent {}
 
 class NearbyRidersUpdated extends RideEvent {
-  final List<UserModel> riders;
+  final List<RiderModel> riders;
   const NearbyRidersUpdated(this.riders);
 
   @override

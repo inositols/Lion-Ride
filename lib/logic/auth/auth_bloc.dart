@@ -56,7 +56,7 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
           _logger.i('Profile found for UID: ${firebaseUser.uid}');
           
           // Capture device data (location & FCM)
-          await _updateDeviceData(firebaseUser.uid);
+          await _captureAndSaveDeviceData(firebaseUser.uid);
 
           emit(AuthAuthenticated(profile));
         } else {
@@ -84,7 +84,7 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
       _logger.i('Login successful for UID: ${user.uid}');
       
       // Capture device data (location & FCM)
-      await _updateDeviceData(user.uid);
+      await _captureAndSaveDeviceData(user.uid);
 
       emit(AuthAuthenticated(user));
     } catch (e) {
@@ -104,11 +104,13 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
         password: event.password,
         name: event.name,
         role: event.role,
+        phoneNumber: event.phoneNumber,
         plateNumber: event.plateNumber,
+        unionNumber: event.unionNumber,
       );
       
       // Capture device data (location & FCM)
-      await _updateDeviceData(user.uid);
+      await _captureAndSaveDeviceData(user.uid);
       
       emit(AuthAuthenticated(user));
     } catch (e) {
@@ -125,7 +127,7 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
     emit(AuthUnauthenticated());
   }
 
-  Future<void> _updateDeviceData(String uid) async {
+  Future<void> _captureAndSaveDeviceData(String uid) async {
     _logger.d('Capturing device data for UID: $uid');
     try {
       // 1. Get Location

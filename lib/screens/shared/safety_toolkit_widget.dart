@@ -1,11 +1,11 @@
 import 'package:flutter/material.dart';
 import '../../core/services/safety_service.dart';
 import '../../models/ride_model.dart';
-import '../../models/user_model.dart';
+import '../../models/base_user_model.dart';
 
 class SafetyToolkitWidget extends StatelessWidget {
   final RideModel ride;
-  final UserModel? driver;
+  final BaseUserModel? driver;
 
   const SafetyToolkitWidget({
     super.key,

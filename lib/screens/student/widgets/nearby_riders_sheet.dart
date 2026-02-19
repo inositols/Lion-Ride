@@ -3,12 +3,12 @@ import 'package:geolocator/geolocator.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:nsuride_mobile/logic/location/location_bloc.dart';
-import '../../../models/user_model.dart';
+import '../../../models/rider_model.dart';
 
 class NearbyRidersSheet extends StatelessWidget {
-  final List<UserModel> riders;
+  final List<RiderModel> riders;
   final LatLng studentPos;
-  final Function(UserModel) onRiderTap;
+  final Function(RiderModel) onRiderTap;
   final Function(LocationState) onRequestTap;
   final LocationState locState;
 
@@ -24,7 +24,7 @@ class NearbyRidersSheet extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     // Sort riders by distance
-    final sortedRiders = List<UserModel>.from(riders);
+    final sortedRiders = List<RiderModel>.from(riders);
     sortedRiders.sort((a, b) {
       if (a.lastLocation == null || b.lastLocation == null) return 0;
       final distA = Geolocator.distanceBetween(

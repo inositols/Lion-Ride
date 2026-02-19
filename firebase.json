@@ -1,1 +1,26 @@
-{"flutter":{"platforms":{"android":{"default":{"projectId":"techieskills-ab13d","appId":"1:126116197247:android:ca982665dce4b5c89f604a","fileOutput":"android/app/google-services.json"}},"dart":{"lib/firebase_options.dart":{"projectId":"techieskills-ab13d","configurations":{"android":"1:126116197247:android:ca982665dce4b5c89f604a","ios":"1:126116197247:ios:c575ac081c614bfe9f604a","web":"1:126116197247:web:4125eda7068ff0a39f604a"}}}}}}
+{
+    "functions": {
+        "source": "functions"
+    },
+    "flutter": {
+        "platforms": {
+            "android": {
+                "default": {
+                    "projectId": "techieskills-ab13d",
+                    "appId": "1:126116197247:android:ca982665dce4b5c89f604a",
+                    "fileOutput": "android/app/google-services.json"
+                }
+            },
+            "dart": {
+                "lib/firebase_options.dart": {
+                    "projectId": "techieskills-ab13d",
+                    "configurations": {
+                        "android": "1:126116197247:android:ca982665dce4b5c89f604a",
+                        "ios": "1:126116197247:ios:c575ac081c614bfe9f604a",
+                        "web": "1:126116197247:web:4125eda7068ff0a39f604a"
+                    }
+                }
+            }
+        }
+    }
+}

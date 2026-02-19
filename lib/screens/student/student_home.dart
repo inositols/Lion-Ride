@@ -10,7 +10,8 @@ import '../../repositories/location_repository.dart';
 import '../../core/services/safety_service.dart';
 import '../../logic/ride/ride_bloc.dart';
 import '../../models/ride_model.dart';
-import '../../models/user_model.dart';
+import '../../models/base_user_model.dart';
+import '../../models/rider_model.dart';
 import '../shared/safety_toolkit_widget.dart';
 import '../../core/widgets/global_error_listener.dart';
 import '../../core/services/map_marker_service.dart';
@@ -489,11 +490,10 @@ class _StudentHomeState extends State<StudentHome> {
                     ride: state.ride,
                     onCallPressed: () {},
                     onSafetyPressed: () {
-                      final driver = state.nearbyRiders
-                          .cast<UserModel?>()
+                      final BaseUserModel? driver = state.nearbyRiders
                           .firstWhere(
-                            (r) => r?.uid == state.ride.riderId,
-                            orElse: () => null,
+                            (r) => r.uid == state.ride.riderId,
+                            orElse: () => throw 'Driver not found',
                           );
                       showModalBottomSheet(
                         context: context,
@@ -518,11 +518,10 @@ class _StudentHomeState extends State<StudentHome> {
             BlocBuilder<RideBloc, RideState>(
               builder: (context, rideState) {
                 if (rideState is RideActive) {
-                  final driver = rideState.nearbyRiders
-                      .cast<UserModel?>()
+                  final BaseUserModel? driver = rideState.nearbyRiders
                       .firstWhere(
-                        (r) => r?.uid == rideState.ride.riderId,
-                        orElse: () => null,
+                        (r) => r.uid == rideState.ride.riderId,
+                        orElse: () => throw 'Driver not found',
                       );
 
                   return Positioned(

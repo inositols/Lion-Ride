@@ -1,0 +1,12 @@
+{
+  "name": "nsuride-functions",
+  "description": "Firebase Cloud Functions for Nsuride",
+  "dependencies": {
+    "firebase-admin": "^11.5.0",
+    "firebase-functions": "^4.2.0"
+  },
+  "engines": {
+    "node": "22"
+  },
+  "private": true
+}

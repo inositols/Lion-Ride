@@ -7,7 +7,7 @@ class EncryptionService {
 
   // 32-character key for AES-256
   // TODO: Move this to an environment variable (.env) for production
-  static const String _keyString = 'a1b2c3d4e5f6g7h8i9j0k1l2m3n4o5p6';
+  static const String _keyString = 'NsurideSecretKey_2026_UnnNsukka!';
   final _key = Key.fromUtf8(_keyString);
   final _iv = IV.fromLength(16);
 
@@ -27,7 +27,7 @@ class EncryptionService {
       return encrypted.base64;
     } catch (e) {
       print('Encryption Error: $e');
-      return plainText; // Return original text on error to avoid data loss
+      return plainText; 
     }
   }
 
@@ -41,7 +41,7 @@ class EncryptionService {
       return decrypted;
     } catch (e) {
       print('Decryption Error: $e');
-      return encryptedText; // Return original text if decryption fails (might not be encrypted)
+      return encryptedText;
     }
   }
 }

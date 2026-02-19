@@ -4,7 +4,8 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:equatable/equatable.dart';
 import 'package:logger/logger.dart';
 import '../../models/ride_model.dart';
-import '../../models/user_model.dart';
+import '../../models/base_user_model.dart';
+import '../../models/rider_model.dart';
 import '../../repositories/ride_repository.dart';
 import '../../repositories/auth_repository.dart';
 

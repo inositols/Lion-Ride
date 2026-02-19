@@ -5,7 +5,8 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../../logic/verification/verification_bloc.dart';
 import '../../logic/auth/auth_bloc.dart';
-import '../../models/user_model.dart';
+import '../../models/base_user_model.dart';
+import '../../models/rider_model.dart';
 
 class DocumentUploadScreen extends StatefulWidget {
   const DocumentUploadScreen({super.key});
@@ -65,13 +66,14 @@ class _DocumentUploadScreenState extends State<DocumentUploadScreen> {
       builder: (context, state) {
         return BlocBuilder<AuthBloc, AuthState>(
           builder: (context, authState) {
-            UserModel? user;
+            BaseUserModel? user;
             if (authState is AuthAuthenticated) {
               user = authState.user;
             }
 
-            final hasNin = _ninFile != null || (user?.ninUrl != null);
-            final hasBike = _bikeFile != null || (user?.bikePapersUrl != null);
+            final rider = user is RiderModel ? user : null;
+            final hasNin = _ninFile != null || (rider?.ninUrl != null);
+            final hasBike = _bikeFile != null || (rider?.bikePapersUrl != null);
             final canContinue = hasNin && hasBike && !_isUploadingNin && !_isUploadingBike;
 
             return Scaffold(
@@ -103,7 +105,7 @@ class _DocumentUploadScreenState extends State<DocumentUploadScreen> {
                     _buildDocCard(
                       title: 'NIN / Voters Card',
                       file: _ninFile,
-                      remoteUrl: user?.ninUrl,
+                      remoteUrl: rider?.ninUrl,
                       isUploading: _isUploadingNin,
                       onTap: () => _isUploadingNin ? null : _pickImage('nin'),
                     ),
@@ -111,7 +113,7 @@ class _DocumentUploadScreenState extends State<DocumentUploadScreen> {
                     _buildDocCard(
                       title: 'Bike Papers',
                       file: _bikeFile,
-                      remoteUrl: user?.bikePapersUrl,
+                      remoteUrl: rider?.bikePapersUrl,
                       isUploading: _isUploadingBike,
                       onTap: () => _isUploadingBike ? null : _pickImage('bike_papers'),
                     ),

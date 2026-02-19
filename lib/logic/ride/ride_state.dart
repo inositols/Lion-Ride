@@ -1,7 +1,7 @@
 part of 'ride_bloc.dart';
 
 abstract class RideState extends Equatable {
-  final List<UserModel> nearbyRiders;
+  final List<RiderModel> nearbyRiders;
   const RideState({this.nearbyRiders = const []});
   
   @override

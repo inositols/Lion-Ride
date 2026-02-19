@@ -15,7 +15,9 @@ class _LoginScreenState extends State<LoginScreen> {
   final _emailController = TextEditingController();
   final _passwordController = TextEditingController();
   final _nameController = TextEditingController();
+  final _phoneController = TextEditingController();
   final _plateNumberController = TextEditingController();
+  final _unionNumberController = TextEditingController();
   bool _isLogin = true;
   String _role = 'student';
 
@@ -32,7 +34,9 @@ class _LoginScreenState extends State<LoginScreen> {
     _emailController.dispose();
     _passwordController.dispose();
     _nameController.dispose();
+    _phoneController.dispose();
     _plateNumberController.dispose();
+    _unionNumberController.dispose();
     super.dispose();
   }
 
@@ -40,7 +44,9 @@ class _LoginScreenState extends State<LoginScreen> {
     final email = _emailController.text.trim();
     final password = _passwordController.text.trim();
     final name = _nameController.text.trim();
+    final phoneNumber = _phoneController.text.trim();
     final plateNumber = _plateNumberController.text.trim();
+    final unionNumber = _unionNumberController.text.trim();
 
     debugPrint('LoginScreen: _submit triggered. Email: $email, IsLogin: $_isLogin');
 
@@ -57,17 +63,29 @@ class _LoginScreenState extends State<LoginScreen> {
             AuthLoginRequested(email: email, password: password),
           );
     } else {
-      if (name.isEmpty) {
-        debugPrint('LoginScreen: Name empty for signup');
+      if (name.isEmpty || phoneNumber.isEmpty) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Name and Phone Number are required')),
+        );
         return;
       }
+      
+      if (_role == 'rider' && (plateNumber.isEmpty || unionNumber.isEmpty)) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Plate and Union numbers are required for riders')),
+        );
+        return;
+      }
+
       context.read<AuthBloc>().add(
             AuthSignUpRequested(
               email: email,
               password: password,
               name: name,
               role: _role,
+              phoneNumber: phoneNumber,
               plateNumber: _role == 'rider' ? plateNumber : null,
+              unionNumber: _role == 'rider' ? unionNumber : null,
             ),
           );
     }
@@ -176,6 +194,13 @@ class _LoginScreenState extends State<LoginScreen> {
                                       icon: Icons.person_outline,
                                     ),
                                     const SizedBox(height: 16),
+                                    _buildTextField(
+                                      controller: _phoneController,
+                                      label: 'Phone Number',
+                                      icon: Icons.phone_outlined,
+                                      keyboardType: TextInputType.phone,
+                                    ),
+                                    const SizedBox(height: 16),
                                   ],
                                   _buildTextField(
                                     controller: _emailController,
@@ -184,18 +209,24 @@ class _LoginScreenState extends State<LoginScreen> {
                                     keyboardType: TextInputType.emailAddress,
                                   ),
                                   const SizedBox(height: 16),
-                                    _buildTextField(
-                                      controller: _passwordController,
-                                      label: 'Password',
-                                      icon: Icons.lock_outline,
-                                      obscureText: true,
-                                    ),
+                                  _buildTextField(
+                                    controller: _passwordController,
+                                    label: 'Password',
+                                    icon: Icons.lock_outline,
+                                    obscureText: true,
+                                  ),
                                     if (!_isLogin && _role == 'rider') ...[
                                       const SizedBox(height: 16),
                                       _buildTextField(
                                         controller: _plateNumberController,
                                         label: 'Plate Number (e.g. ENU-123-AB)',
                                         icon: Icons.apps_outage_outlined,
+                                      ),
+                                      const SizedBox(height: 16),
+                                      _buildTextField(
+                                        controller: _unionNumberController,
+                                        label: 'Union Number',
+                                        icon: Icons.numbers_outlined,
                                       ),
                                     ],
                                   if (!_isLogin) ...[

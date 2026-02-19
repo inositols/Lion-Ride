@@ -1,5 +1,6 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:nsuride_mobile/models/user_model.dart';
+import '../models/base_user_model.dart';
+import '../models/rider_model.dart';
 import '../models/ride_model.dart';
 
 class RideRepository {
@@ -97,7 +98,7 @@ class RideRepository {
   }
 
   // Stream all online riders for the "Ghost Riders" feature
-  Stream<List<UserModel>> streamOnlineRiders() {
+  Stream<List<RiderModel>> streamOnlineRiders() {
     return _firestore
         .collection('users')
         .where('role', isEqualTo: 'rider')
@@ -110,7 +111,7 @@ class RideRepository {
             if (data['uid'] == null || (data['uid'] as String).isEmpty) {
               data['uid'] = doc.id;
             }
-            return UserModel.fromMap(data);
+            return RiderModel.fromMap(data);
           }).toList();
         });
   }
