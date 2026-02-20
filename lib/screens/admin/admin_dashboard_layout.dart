@@ -4,6 +4,10 @@ import 'views/overview_view.dart';
 import 'views/verification_center_view.dart';
 import 'views/transaction_ledger_view.dart';
 import 'views/user_management_view.dart';
+import 'views/pricing_settings_view.dart';
+import 'views/live_map_view.dart';
+import 'views/dispute_management_view.dart';
+import 'views/broadcast_view.dart';
 
 class AdminDashboardLayout extends StatefulWidget {
   const AdminDashboardLayout({super.key});
@@ -18,9 +22,13 @@ class _AdminDashboardLayoutState extends State<AdminDashboardLayout> {
 
   final List<({String title, IconData icon, Widget view})> _menuItems = [
     (title: 'Overview', icon: Icons.analytics_outlined, view: const OverviewView()),
+    (title: 'Live Map', icon: Icons.map_outlined, view: const LiveMapView()),
+    (title: 'Users', icon: Icons.people_outline, view: const UserManagementView()),
     (title: 'Verifications', icon: Icons.verified_user_outlined, view: const VerificationCenterView()),
     (title: 'Ledger', icon: Icons.credit_card_outlined, view: const TransactionLedgerView()),
-    (title: 'Users', icon: Icons.people_outline, view: const UserManagementView()),
+    (title: 'Pricing', icon: Icons.payments_outlined, view: const PricingSettingsView()),
+    (title: 'Disputes', icon: Icons.gavel_outlined, view: const DisputeManagementView()),
+    (title: 'Broadcast', icon: Icons.campaign_outlined, view: const BroadcastView()),
   ];
 
   @override

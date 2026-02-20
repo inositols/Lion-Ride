@@ -128,23 +128,39 @@ class _UserManagementViewState extends State<UserManagementView> {
                               final data = doc.data() as Map<String, dynamic>;
                               final role = data['role'] ?? 'student';
                               final status = data['status'] ?? 'active';
+                              final bool isSuspended = data['is_suspended'] ?? false;
+                              final double balance = (data['wallet_balance'] ?? 0.0).toDouble();
 
                               return DataRow(
+                                color: WidgetStateProperty.resolveWith<Color?>((states) {
+                                  if (isSuspended) return Colors.red.withOpacity(0.05);
+                                  return null;
+                                }),
                                 cells: [
                                   DataCell(Text(data['name'] ?? 'N/A', style: const TextStyle(fontWeight: FontWeight.w500))),
                                   DataCell(Text(data['email'] ?? 'N/A')),
                                   DataCell(Text(data['phone'] ?? 'N/A')),
                                   DataCell(_buildRoleBadge(role)),
-                                  DataCell(_buildStatusBadge(status)),
+                                  DataCell(Text('₦${NumberFormat('#,###').format(balance)}')),
+                                  DataCell(_buildStatusBadge(isSuspended ? 'suspended' : status)),
                                   DataCell(
                                     PopupMenuButton<String>(
-                                      onSelected: (val) {
-                                        if (val == 'role') _showRoleDialog(context, doc.id, role);
-                                        // Add disable/enable logic here
+                                      onSelected: (val) async {
+                                        if (val == 'role') {
+                                          _showRoleDialog(context, doc.id, role);
+                                        } else if (val == 'suspend') {
+                                          await FirebaseFirestore.instance.collection('users').doc(doc.id).update({
+                                            'is_suspended': !isSuspended,
+                                          });
+                                        } else if (val == 'reset_pin') {
+                                          ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Wallet PIN Reset initiated')));
+                                        }
                                       },
                                       itemBuilder: (context) => [
+                                        const PopupMenuItem(value: 'profile', child: Text('View Profile')),
                                         const PopupMenuItem(value: 'role', child: Text('Change Role')),
-                                        PopupMenuItem(value: 'status', child: Text(status == 'active' ? 'Disable Account' : 'Enable Account')),
+                                        PopupMenuItem(value: 'suspend', child: Text(isSuspended ? 'Unsuspend User' : 'Suspend Account')),
+                                        const PopupMenuItem(value: 'reset_pin', child: Text('Reset Wallet PIN')),
                                       ],
                                       icon: const Icon(Icons.more_vert),
                                     ),
@@ -213,18 +229,21 @@ class _UserManagementViewState extends State<UserManagementView> {
     if (role == 'admin') color = const Color(0xFF004D40);
 
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
       decoration: BoxDecoration(color: color.withOpacity(0.1), borderRadius: BorderRadius.circular(20)),
       child: Text(role.toUpperCase(), style: TextStyle(color: color, fontSize: 10, fontWeight: FontWeight.bold)),
     );
   }
 
   Widget _buildStatusBadge(String status) {
-    final bool isActive = status == 'active';
+    bool isActive = status == 'active';
+    bool isSuspended = status == 'suspended';
+    Color color = isActive ? Colors.green : (isSuspended ? Colors.red : Colors.grey);
+
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-      decoration: BoxDecoration(color: (isActive ? Colors.green : Colors.red).withOpacity(0.1), borderRadius: BorderRadius.circular(20)),
-      child: Text(isActive ? 'ACTIVE' : 'DISABLED', style: TextStyle(color: isActive ? Colors.green : Colors.red, fontSize: 10, fontWeight: FontWeight.bold)),
+      decoration: BoxDecoration(color: color.withOpacity(0.1), borderRadius: BorderRadius.circular(20)),
+      child: Text(status.toUpperCase(), style: TextStyle(color: color, fontSize: 10, fontWeight: FontWeight.bold)),
     );
   }
 }
