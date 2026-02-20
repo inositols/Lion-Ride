@@ -37,7 +37,7 @@ class WalletBloc extends Bloc<WalletEvent, WalletState> {
     _logger.i('Loading wallet...');
 
     try {
-      final firebaseUser = await _authRepository.user.first;
+      final firebaseUser = await _authRepository.user.firstWhere((user) => user != null);
       if (firebaseUser == null) {
         _logger.w('No authenticated user found for wallet loading.');
         emit(const WalletError('User not authenticated.'));

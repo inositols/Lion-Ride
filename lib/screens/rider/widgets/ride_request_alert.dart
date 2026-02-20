@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:nsuride_mobile/models/ride_model.dart';
-import 'package:intl/intl.dart';
 
 class RideRequestAlert extends StatefulWidget {
   final RideModel ride;
@@ -19,7 +18,8 @@ class RideRequestAlert extends StatefulWidget {
   State<RideRequestAlert> createState() => _RideRequestAlertState();
 }
 
-class _RideRequestAlertState extends State<RideRequestAlert> with SingleTickerProviderStateMixin {
+class _RideRequestAlertState extends State<RideRequestAlert>
+    with SingleTickerProviderStateMixin {
   late AnimationController _pulseController;
   late Animation<double> _pulseAnimation;
 
@@ -80,7 +80,10 @@ class _RideRequestAlertState extends State<RideRequestAlert> with SingleTickerPr
                   ScaleTransition(
                     scale: _pulseAnimation,
                     child: Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 16,
+                        vertical: 8,
+                      ),
                       decoration: BoxDecoration(
                         color: Colors.white.withValues(alpha: 0.2),
                         borderRadius: BorderRadius.circular(30),
@@ -88,7 +91,11 @@ class _RideRequestAlertState extends State<RideRequestAlert> with SingleTickerPr
                       child: Row(
                         mainAxisSize: MainAxisSize.min,
                         children: [
-                          const Icon(Icons.flash_on, color: Color(0xFFFFC107), size: 18),
+                          const Icon(
+                            Icons.flash_on,
+                            color: Color(0xFFFFC107),
+                            size: 18,
+                          ),
                           const SizedBox(width: 8),
                           Text(
                             'NEW RIDE REQUEST',
@@ -128,7 +135,12 @@ class _RideRequestAlertState extends State<RideRequestAlert> with SingleTickerPr
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
                       _buildInfoTile(Icons.near_me, '1.2 km', 'Away'),
-                      Container(width: 1, height: 30, color: Colors.white24, margin: const EdgeInsets.symmetric(horizontal: 24)),
+                      Container(
+                        width: 1,
+                        height: 30,
+                        color: Colors.white24,
+                        margin: const EdgeInsets.symmetric(horizontal: 24),
+                      ),
                       _buildInfoTile(Icons.timer, '4 min', 'Pickup'),
                     ],
                   ),
@@ -144,12 +156,24 @@ class _RideRequestAlertState extends State<RideRequestAlert> with SingleTickerPr
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        _buildRouteStep(Icons.circle, Colors.tealAccent, widget.ride.pickupAddress),
+                        _buildRouteStep(
+                          Icons.circle,
+                          Colors.tealAccent,
+                          widget.ride.pickupAddress,
+                        ),
                         const Padding(
                           padding: EdgeInsets.only(left: 11),
-                          child: Icon(Icons.more_vert, size: 12, color: Colors.white24),
+                          child: Icon(
+                            Icons.more_vert,
+                            size: 12,
+                            color: Colors.white24,
+                          ),
                         ),
-                        _buildRouteStep(Icons.location_on, Colors.orangeAccent, widget.ride.dropoffAddress),
+                        _buildRouteStep(
+                          Icons.location_on,
+                          Colors.orangeAccent,
+                          widget.ride.dropoffAddress,
+                        ),
                       ],
                     ),
                   ),
@@ -164,11 +188,16 @@ class _RideRequestAlertState extends State<RideRequestAlert> with SingleTickerPr
                           style: OutlinedButton.styleFrom(
                             side: const BorderSide(color: Colors.white38),
                             padding: const EdgeInsets.symmetric(vertical: 18),
-                            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(15),
+                            ),
                           ),
                           child: Text(
                             'DECLINE',
-                            style: GoogleFonts.outfit(color: Colors.white70, fontWeight: FontWeight.bold),
+                            style: GoogleFonts.outfit(
+                              color: Colors.white70,
+                              fontWeight: FontWeight.bold,
+                            ),
                           ),
                         ),
                       ),
@@ -181,12 +210,17 @@ class _RideRequestAlertState extends State<RideRequestAlert> with SingleTickerPr
                             backgroundColor: Colors.white,
                             foregroundColor: tealColor,
                             padding: const EdgeInsets.symmetric(vertical: 18),
-                            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(15),
+                            ),
                             elevation: 0,
                           ),
                           child: Text(
                             'ACCEPT RIDE',
-                            style: GoogleFonts.outfit(fontWeight: FontWeight.bold, fontSize: 18),
+                            style: GoogleFonts.outfit(
+                              fontWeight: FontWeight.bold,
+                              fontSize: 18,
+                            ),
                           ),
                         ),
                       ),
@@ -208,7 +242,11 @@ class _RideRequestAlertState extends State<RideRequestAlert> with SingleTickerPr
         const SizedBox(height: 4),
         Text(
           value,
-          style: GoogleFonts.outfit(color: Colors.white, fontSize: 18, fontWeight: FontWeight.bold),
+          style: GoogleFonts.outfit(
+            color: Colors.white,
+            fontSize: 18,
+            fontWeight: FontWeight.bold,
+          ),
         ),
         Text(
           unit,

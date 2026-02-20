@@ -99,6 +99,7 @@ class _RiderHomeState extends State<RiderHome> {
                   context: context,
                   backgroundColor: Colors.transparent,
                   isDismissible: true,
+                  isScrollControlled: true,
                   builder: (context) => RideRequestAlert(
                     ride: latestRide,
                     onAccept: () {
