@@ -118,11 +118,10 @@ class _SplashScreenState extends State<SplashScreen>
                         ),
                       ],
                     ),
-                    child: const Center(
-                      child: Icon(
-                        Icons.directions_car_filled,
-                        size: 80,
-                        color: Color(0xFF004D40),
+                    child: ClipOval(
+                      child: Image.asset(
+                        'assets/launcher/app_icon.png',
+                        fit: BoxFit.cover,
                       ),
                     ),
                   ),

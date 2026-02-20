@@ -48,6 +48,65 @@ class WalletScreen extends StatelessWidget {
     );
   }
 
+  void _showWithdrawDialog(BuildContext context) {
+    final TextEditingController amountController = TextEditingController();
+    final TextEditingController bankDetailsController = TextEditingController();
+    
+    showDialog(
+      context: context,
+      builder: (dialogContext) => AlertDialog(
+        title: const Text('Withdraw Funds'),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            TextField(
+              controller: amountController,
+              keyboardType: TextInputType.number,
+              decoration: const InputDecoration(
+                hintText: 'Enter amount (₦)',
+                prefixText: '₦ ',
+              ),
+            ),
+            const SizedBox(height: 16),
+            TextField(
+              controller: bankDetailsController,
+              decoration: const InputDecoration(
+                hintText: 'Bank Name, Account Number',
+                labelText: 'Bank Details',
+              ),
+              maxLines: 2,
+            ),
+          ],
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(dialogContext),
+            child: const Text('Cancel'),
+          ),
+          ElevatedButton(
+            onPressed: () {
+              final amount = double.tryParse(amountController.text);
+              final details = bankDetailsController.text.trim();
+              if (amount != null && amount > 0 && details.isNotEmpty) {
+                final walletBloc = context.read<WalletBloc>();
+                Navigator.pop(dialogContext);
+                walletBloc.add(WithdrawFundsRequested(
+                  amount: amount,
+                  bankDetails: details,
+                ));
+              } else {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(content: Text('Please enter a valid amount and bank details')),
+                );
+              }
+            },
+            child: const Text('Withdraw'),
+          ),
+        ],
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -228,9 +287,7 @@ class WalletScreen extends StatelessWidget {
               if (role == 'rider')
                 Expanded(
                   child: ElevatedButton.icon(
-                    onPressed: () {
-                      // Logic for withdrawal
-                    },
+                    onPressed: () => _showWithdrawDialog(context),
                     icon: const Icon(Icons.account_balance_wallet_outlined),
                     label: const Text('Withdraw'),
                     style: ElevatedButton.styleFrom(

@@ -6,6 +6,7 @@ import 'logic/auth/auth_bloc.dart';
 import 'screens/auth/login_screen.dart';
 import 'screens/student/student_home.dart';
 import 'screens/rider/rider_home.dart';
+import 'screens/admin/admin_dashboard_layout.dart';
 import 'screens/splash/splash_screen.dart';
 import 'screens/onboarding/onboarding_screen.dart';
 import 'core/widgets/global_error_listener.dart';
@@ -93,7 +94,9 @@ class _RootWrapperState extends State<RootWrapper> {
           if (state is AuthAuthenticated) {
             final user = state.user;
             _logger.i('User authenticated: ${user.name} (${user.role})');
-            if (user.role == 'rider') {
+            if (user.role == 'admin') {
+              return const AdminDashboardLayout();
+            } else if (user.role == 'rider') {
               return const RiderHome();
             } else {
               return const StudentHome();

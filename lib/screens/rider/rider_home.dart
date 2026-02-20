@@ -4,6 +4,7 @@ import 'package:google_maps_flutter/google_maps_flutter.dart';
 import '../../logic/auth/auth_bloc.dart';
 import '../../models/rider_model.dart';
 import '../../logic/ride/ride_bloc.dart';
+import '../../logic/wallet/wallet_bloc.dart';
 import 'dart:async';
 import 'package:geolocator/geolocator.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
@@ -75,6 +76,8 @@ class _RiderHomeState extends State<RiderHome> {
           }
 
           final user = authState.user;
+          // Ensure wallet is loaded
+          context.read<WalletBloc>().add(LoadWallet());
 
           // Security Check: Enforce Verification Flow
           if (user is RiderModel && !user.isVerified) {
@@ -229,7 +232,22 @@ class _RiderHomeState extends State<RiderHome> {
             }
           },
         ),
-        const RiderEarningsCard(totalEarnings: '₦0.00', totalTrips: '0'),
+        BlocBuilder<WalletBloc, WalletState>(
+          builder: (context, state) {
+            String earnings = '₦ 0.00';
+            String trips = '0';
+            
+            if (state is WalletLoaded) {
+              earnings = '₦ ${state.balance.toStringAsFixed(2)}';
+              trips = state.transactions.length.toString();
+            }
+            
+            return RiderEarningsCard(
+              totalEarnings: earnings,
+              totalTrips: trips,
+            );
+          },
+        ),
         const Padding(
           padding: EdgeInsets.symmetric(horizontal: 20, vertical: 10),
           child: Row(
