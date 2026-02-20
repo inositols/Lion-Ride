@@ -2,7 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'views/overview_view.dart';
 import 'views/verification_center_view.dart';
-import 'views/transaction_view.dart';
+import 'views/transaction_ledger_view.dart';
+import 'views/user_management_view.dart';
 
 class AdminDashboardLayout extends StatefulWidget {
   const AdminDashboardLayout({super.key});
@@ -12,220 +13,209 @@ class AdminDashboardLayout extends StatefulWidget {
 }
 
 class _AdminDashboardLayoutState extends State<AdminDashboardLayout> {
-  int _selectedIndex = 0;
+  final ValueNotifier<int> _selectedIndex = ValueNotifier<int>(0);
   final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
 
-  final List<String> _titles = [
-    'Overview',
-    'Verifications',
-    'Ledger',
+  final List<({String title, IconData icon, Widget view})> _menuItems = [
+    (title: 'Overview', icon: Icons.analytics_outlined, view: const OverviewView()),
+    (title: 'Verifications', icon: Icons.verified_user_outlined, view: const VerificationCenterView()),
+    (title: 'Ledger', icon: Icons.credit_card_outlined, view: const TransactionLedgerView()),
+    (title: 'Users', icon: Icons.people_outline, view: const UserManagementView()),
   ];
 
   @override
-  Widget build(BuildContext context) {
-    final double width = MediaQuery.of(context).size.width;
-    final bool isDesktop = width > 800;
+  void dispose() {
+    _selectedIndex.dispose();
+    super.dispose();
+  }
 
-    return Scaffold(
-      key: _scaffoldKey,
-      backgroundColor: const Color(0xFFF5F7F9),
-      appBar: isDesktop
-          ? null
-          : AppBar(
-              backgroundColor: const Color(0xFF004D40),
-              elevation: 0,
-              title: Text(
-                _titles[_selectedIndex],
-                style: GoogleFonts.outfit(fontWeight: FontWeight.bold, color: Colors.white),
+  @override
+  Widget build(BuildContext context) {
+    return ValueListenableBuilder<int>(
+      valueListenable: _selectedIndex,
+      builder: (context, index, child) {
+        final double width = MediaQuery.of(context).size.width;
+        final bool isDesktop = width > 800;
+
+        return Scaffold(
+          key: _scaffoldKey,
+          backgroundColor: const Color(0xFFF5F7FA),
+          appBar: isDesktop
+              ? null
+              : AppBar(
+                  backgroundColor: const Color(0xFF004D40),
+                  elevation: 0,
+                  title: Text(
+                    _menuItems[index].title,
+                    style: GoogleFonts.outfit(fontWeight: FontWeight.bold, color: Colors.white),
+                  ),
+                  leading: IconButton(
+                    icon: const Icon(Icons.menu, color: Colors.white),
+                    onPressed: () => _scaffoldKey.currentState?.openDrawer(),
+                  ),
+                ),
+          drawer: isDesktop ? null : _buildDrawer(index),
+          body: Row(
+            children: [
+              if (isDesktop) _buildSidebar(index),
+              Expanded(
+                child: _menuItems[index].view,
               ),
-              leading: IconButton(
-                icon: const Icon(Icons.menu, color: Colors.white),
-                onPressed: () => _scaffoldKey.currentState?.openDrawer(),
-              ),
-            ),
-      drawer: isDesktop ? null : _buildDrawer(),
-      body: Row(
+            ],
+          ),
+        );
+      },
+    );
+  }
+
+  Widget _buildSidebar(int currentIndex) {
+    return Container(
+      width: 280,
+      decoration: const BoxDecoration(
+        color: Color(0xFF004D40),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black12,
+            blurRadius: 10,
+            offset: Offset(2, 0),
+          ),
+        ],
+      ),
+      child: Column(
         children: [
-          if (isDesktop) _buildSidebar(),
-          Expanded(
-            child: _buildBody(),
+          _buildLogo(),
+          const SizedBox(height: 32),
+          ...List.generate(_menuItems.length, (i) => _buildNavItem(i, _menuItems[i].icon, _menuItems[i].title, currentIndex == i)),
+          const Spacer(),
+          _buildAdminProfile(),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildLogo() {
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 40, horizontal: 24),
+      child: Row(
+        children: [
+          Container(
+            padding: const EdgeInsets.all(8),
+            decoration: BoxDecoration(
+              color: const Color(0xFFFFC107),
+              borderRadius: BorderRadius.circular(12),
+            ),
+            child: const Icon(Icons.auto_awesome, color: Color(0xFF004D40), size: 24),
+          ),
+          const SizedBox(width: 16),
+          Text(
+            'NSURIDE',
+            style: GoogleFonts.outfit(
+              color: Colors.white,
+              fontSize: 22,
+              fontWeight: FontWeight.w900,
+              letterSpacing: 1.2,
+            ),
           ),
         ],
       ),
     );
   }
 
-  Widget _buildSidebar() {
-    return Container(
-      width: 260,
-      color: const Color(0xFF004D40),
-      child: Column(
-        children: [
-          Padding(
-            padding: const EdgeInsets.symmetric(vertical: 40, horizontal: 24),
+  Widget _buildNavItem(int index, IconData icon, String label, bool isSelected) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+      child: Material(
+        color: Colors.transparent,
+        child: InkWell(
+          onTap: () => _selectedIndex.value = index,
+          borderRadius: BorderRadius.circular(12),
+          child: Container(
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+            decoration: BoxDecoration(
+              color: isSelected ? Colors.white.withOpacity(0.1) : Colors.transparent,
+              borderRadius: BorderRadius.circular(12),
+            ),
             child: Row(
               children: [
-                const Icon(Icons.auto_awesome, color: Color(0xFFFFC107), size: 32),
-                const SizedBox(width: 12),
+                Icon(
+                  icon,
+                  color: isSelected ? const Color(0xFFFFC107) : Colors.white70,
+                  size: 22,
+                ),
+                const SizedBox(width: 16),
                 Text(
-                  'NSURIDE',
-                  style: GoogleFonts.outfit(
-                    color: Colors.white,
-                    fontSize: 22,
-                    fontWeight: FontWeight.w900,
-                    letterSpacing: 1.5,
+                  label,
+                  style: GoogleFonts.inter(
+                    color: isSelected ? Colors.white : Colors.white70,
+                    fontWeight: isSelected ? FontWeight.bold : FontWeight.w500,
+                    fontSize: 14,
                   ),
                 ),
               ],
             ),
-          ),
-          const SizedBox(height: 20),
-          _buildNavItem(0, Icons.dashboard_outlined, _titles[0]),
-          _buildNavItem(1, Icons.verified_user_outlined, _titles[1]),
-          _buildNavItem(2, Icons.account_balance_wallet_outlined, _titles[2]),
-          const Spacer(),
-          Padding(
-            padding: const EdgeInsets.all(16.0),
-            child: Container(
-              padding: const EdgeInsets.all(12),
-              decoration: BoxDecoration(
-                color: Colors.white.withValues(alpha: 0.05),
-                borderRadius: BorderRadius.circular(12),
-              ),
-              child: Row(
-                children: [
-                  const CircleAvatar(
-                    radius: 18,
-                    backgroundColor: Colors.white24,
-                    child: Icon(Icons.person, size: 20, color: Colors.white),
-                  ),
-                  const SizedBox(width: 12),
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        Text(
-                          'Platform Admin',
-                          style: GoogleFonts.inter(
-                            color: Colors.white,
-                            fontSize: 13,
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
-                        Text(
-                          'Log Out',
-                          style: GoogleFonts.inter(
-                            color: Colors.white54,
-                            fontSize: 11,
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                ],
-              ),
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildNavItem(int index, IconData icon, String label) {
-    final bool isSelected = _selectedIndex == index;
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
-      child: InkWell(
-        onTap: () => setState(() => _selectedIndex = index),
-        borderRadius: BorderRadius.circular(12),
-        child: Container(
-          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-          decoration: BoxDecoration(
-            color: isSelected ? Colors.white.withValues(alpha: 0.1) : Colors.transparent,
-            borderRadius: BorderRadius.circular(12),
-          ),
-          child: Row(
-            children: [
-              Icon(
-                icon,
-                color: isSelected ? const Color(0xFFFFC107) : Colors.white70,
-                size: 22,
-              ),
-              const SizedBox(width: 16),
-              Text(
-                label,
-                style: GoogleFonts.inter(
-                  color: isSelected ? Colors.white : Colors.white70,
-                  fontWeight: isSelected ? FontWeight.bold : FontWeight.w500,
-                  fontSize: 14,
-                ),
-              ),
-            ],
           ),
         ),
       ),
     );
   }
 
-  Widget _buildDrawer() {
+  Widget _buildDrawer(int currentIndex) {
     return Drawer(
       child: Container(
         color: const Color(0xFF004D40),
         child: Column(
           children: [
-            DrawerHeader(
-              child: Center(
-                child: Text(
-                  'NSURIDE',
-                  style: GoogleFonts.outfit(
-                    color: Colors.white,
-                    fontSize: 24,
-                    fontWeight: FontWeight.w900,
-                  ),
-                ),
-              ),
-            ),
-            ListTile(
-              leading: const Icon(Icons.dashboard, color: Colors.white),
-              title: Text(_titles[0], style: const TextStyle(color: Colors.white)),
+            _buildLogo(),
+            ...List.generate(_menuItems.length, (i) => ListTile(
+              leading: Icon(_menuItems[i].icon, color: currentIndex == i ? const Color(0xFFFFC107) : Colors.white70),
+              title: Text(_menuItems[i].title, style: TextStyle(color: currentIndex == i ? Colors.white : Colors.white70, fontWeight: currentIndex == i ? FontWeight.bold : FontWeight.normal)),
               onTap: () {
-                setState(() => _selectedIndex = 0);
+                _selectedIndex.value = i;
                 Navigator.pop(context);
               },
-            ),
-            ListTile(
-              leading: const Icon(Icons.verified_user, color: Colors.white),
-              title: Text(_titles[1], style: const TextStyle(color: Colors.white)),
-              onTap: () {
-                setState(() => _selectedIndex = 1);
-                Navigator.pop(context);
-              },
-            ),
-            ListTile(
-              leading: const Icon(Icons.receipt_long, color: Colors.white),
-              title: Text(_titles[2], style: const TextStyle(color: Colors.white)),
-              onTap: () {
-                setState(() => _selectedIndex = 2);
-                Navigator.pop(context);
-              },
-            ),
+            )),
           ],
         ),
       ),
     );
   }
 
-  Widget _buildBody() {
-    switch (_selectedIndex) {
-      case 0:
-        return const OverviewView();
-      case 1:
-        return const VerificationCenterView();
-      case 2:
-        return const TransactionView();
-      default:
-        return const OverviewView();
-    }
+  Widget _buildAdminProfile() {
+    return Padding(
+      padding: const EdgeInsets.all(24.0),
+      child: Container(
+        padding: const EdgeInsets.all(16),
+        decoration: BoxDecoration(
+          color: Colors.white.withOpacity(0.05),
+          borderRadius: BorderRadius.circular(16),
+        ),
+        child: Row(
+          children: [
+            const CircleAvatar(
+              radius: 20,
+              backgroundColor: Colors.white24,
+              child: Icon(Icons.shield_outlined, color: Colors.white, size: 20),
+            ),
+            const SizedBox(width: 12),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Text(
+                    'Admin Panel',
+                    style: GoogleFonts.inter(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 13),
+                  ),
+                  Text(
+                    'Primary Admin',
+                    style: GoogleFonts.inter(color: Colors.white54, fontSize: 11),
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
   }
 }
