@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:geolocator/geolocator.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../../logic/location/location_bloc.dart';
@@ -65,7 +66,28 @@ class StudentMap extends StatelessWidget {
           builder: (context, rideState) {
             Set<Marker> finalMarkers = Set.from(markers);
 
-            for (var rider in rideState.nearbyRiders) {
+            // Filter and sort nearby riders (top 20 closest)
+            final sortedRiders = List.from(rideState.nearbyRiders)
+              ..sort((a, b) {
+                if (a.lastLocation == null || b.lastLocation == null) return 0;
+                final distA = Geolocator.distanceBetween(
+                  initialPos.latitude,
+                  initialPos.longitude,
+                  a.lastLocation!.latitude,
+                  a.lastLocation!.longitude,
+                );
+                final distB = Geolocator.distanceBetween(
+                  initialPos.latitude,
+                  initialPos.longitude,
+                  b.lastLocation!.latitude,
+                  b.lastLocation!.longitude,
+                );
+                return distA.compareTo(distB);
+              });
+
+            final topRiders = sortedRiders.take(20);
+
+            for (var rider in topRiders) {
               if (rider.lastLocation != null) {
                 finalMarkers.add(
                   Marker(
