@@ -1,22 +1,21 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:google_maps_flutter/google_maps_flutter.dart';
 import '../../logic/auth/auth_bloc.dart';
 import '../../models/rider_model.dart';
 import '../../logic/ride/ride_bloc.dart';
 import '../../logic/wallet/wallet_bloc.dart';
 import 'dart:async';
 import 'package:geolocator/geolocator.dart';
-import 'package:cloud_firestore/cloud_firestore.dart';
-import '../wallet/wallet_screen.dart';
-import '../shared/ride_history_screen.dart';
+import 'package:google_maps_flutter/google_maps_flutter.dart';
 import '../verification/verification_wizard.dart';
 import '../../core/widgets/global_error_listener.dart';
 import 'widgets/rider_status_card.dart';
 import 'widgets/rider_earnings_card.dart';
-import 'widgets/ride_request_item.dart';
 import 'widgets/active_trip_view.dart';
 import 'widgets/ride_request_alert.dart';
+import 'widgets/rider_drawer.dart';
+import 'widgets/rider_request_list.dart';
 
 class RiderHome extends StatefulWidget {
   const RiderHome({super.key});
@@ -76,10 +75,8 @@ class _RiderHomeState extends State<RiderHome> {
           }
 
           final user = authState.user;
-          // Ensure wallet is loaded
           context.read<WalletBloc>().add(LoadWallet());
 
-          // Security Check: Enforce Verification Flow
           if (user is RiderModel && !user.isVerified) {
             return const VerificationWizard();
           }
@@ -140,64 +137,13 @@ class _RiderHomeState extends State<RiderHome> {
                     backgroundColor: const Color(0xFF004D40),
                     foregroundColor: Colors.white,
                   ),
-                  drawer: _buildDrawer(context),
+                  drawer: const RiderDrawer(),
                   body: _buildBody(context, rideState, user.uid),
                 );
               },
             ),
           );
         },
-      ),
-    );
-  }
-
-  Widget _buildDrawer(BuildContext context) {
-    return Drawer(
-      child: Column(
-        children: [
-          const DrawerHeader(
-            decoration: BoxDecoration(color: Color(0xFF004D40)),
-            child: Center(
-              child: Text(
-                'Nsuride Rider',
-                style: TextStyle(
-                  color: Colors.white,
-                  fontSize: 24,
-                  fontWeight: FontWeight.bold,
-                ),
-              ),
-            ),
-          ),
-          ListTile(
-            leading: const Icon(Icons.account_balance_wallet),
-            title: const Text('My Wallet'),
-            onTap: () {
-              Navigator.pop(context);
-              Navigator.push(
-                context,
-                MaterialPageRoute(builder: (context) => const WalletScreen()),
-              );
-            },
-          ),
-          ListTile(
-            leading: const Icon(Icons.history),
-            title: const Text('Ride History'),
-            onTap: () {
-              Navigator.pop(context);
-              Navigator.push(
-                context,
-                MaterialPageRoute(
-                  builder: (context) => const RideHistoryScreen(),
-                ),
-              );
-            },
-          ),
-          ListTile(
-            leading: const Icon(Icons.logout),
-            title: const Text('Logout'),
-            onTap: () => context.read<AuthBloc>().add(AuthLogoutRequested()),
-          ),
-        ],
       ),
     );
   }
@@ -210,7 +156,7 @@ class _RiderHomeState extends State<RiderHome> {
           context.read<RideBloc>().add(CompleteRide(state.ride.rideId));
         },
         onSOS: () {
-          // SOS logic already handled in safety toolkit or similar
+          // SOS logic handled in safety toolkit
         },
         onMapCreated: (controller) => _mapController = controller,
       );
@@ -236,12 +182,12 @@ class _RiderHomeState extends State<RiderHome> {
           builder: (context, state) {
             String earnings = '₦ 0.00';
             String trips = '0';
-            
+
             if (state is WalletLoaded) {
               earnings = '₦ ${state.balance.toStringAsFixed(2)}';
               trips = state.transactions.length.toString();
             }
-            
+
             return RiderEarningsCard(
               totalEarnings: earnings,
               totalTrips: trips,
@@ -261,58 +207,8 @@ class _RiderHomeState extends State<RiderHome> {
             ],
           ),
         ),
-        Expanded(child: _buildRequestList(context, state)),
+        Expanded(child: RiderRequestList(state: state)),
       ],
-    );
-  }
-
-  Widget _buildRequestList(BuildContext context, RideState state) {
-    if (state is RiderBrowsing) {
-      if (state.openRides.isEmpty) {
-        return _buildEmptyState(
-          'No active requests nearby.\nCheck back in a moment!',
-        );
-      }
-      return ListView.builder(
-        padding: const EdgeInsets.symmetric(horizontal: 20),
-        itemCount: state.openRides.length,
-        itemBuilder: (context, index) {
-          final request = state.openRides[index];
-          return RideRequestItem(
-            request: request,
-            onAccept: () {
-              context.read<RideBloc>().add(AcceptRide(request.rideId));
-            },
-          );
-        },
-      );
-    }
-
-    if (state is RiderOffline) {
-      return _buildEmptyState('Go online to see ride requests from students.');
-    }
-
-    return const Center(child: CircularProgressIndicator());
-  }
-
-  Widget _buildEmptyState(String message) {
-    return Center(
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          Icon(
-            Icons.directions_bike_outlined,
-            size: 80,
-            color: Colors.grey[300],
-          ),
-          const SizedBox(height: 16),
-          Text(
-            message,
-            textAlign: TextAlign.center,
-            style: TextStyle(color: Colors.grey[600], fontSize: 16),
-          ),
-        ],
-      ),
     );
   }
 }
