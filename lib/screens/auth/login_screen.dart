@@ -3,6 +3,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../../logic/auth/auth_bloc.dart';
+import 'widgets/auth_text_field.dart';
+import 'widgets/role_selector_button.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -48,10 +50,7 @@ class _LoginScreenState extends State<LoginScreen> {
     final plateNumber = _plateNumberController.text.trim();
     final unionNumber = _unionNumberController.text.trim();
 
-    debugPrint('LoginScreen: _submit triggered. Email: $email, IsLogin: $_isLogin');
-
     if (email.isEmpty || password.isEmpty) {
-      debugPrint('LoginScreen: Email or Password empty');
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('Please fill in all fields')),
       );
@@ -96,7 +95,6 @@ class _LoginScreenState extends State<LoginScreen> {
     return Scaffold(
       body: Stack(
         children: [
-          // Background Image
           Positioned.fill(
             child: Image.network(
               'https://images.unsplash.com/photo-1521737604893-d14cc237f11d?q=80&w=2084&auto=format&fit=crop',
@@ -106,7 +104,6 @@ class _LoginScreenState extends State<LoginScreen> {
               },
             ),
           ),
-          // Dark Overlay Gradient
           Positioned.fill(
             child: Container(
               decoration: BoxDecoration(
@@ -114,14 +111,13 @@ class _LoginScreenState extends State<LoginScreen> {
                   begin: Alignment.topCenter,
                   end: Alignment.bottomCenter,
                   colors: [
-                    Colors.black.withValues(alpha: 0.3),
-                    Colors.black.withValues(alpha: 0.7),
+                    Colors.black.withAlpha(77),
+                    Colors.black.withAlpha(179),
                   ],
                 ),
               ),
             ),
           ),
-          // Content
           SafeArea(
             child: BlocConsumer<AuthBloc, AuthState>(
               listener: (context, state) {
@@ -141,7 +137,6 @@ class _LoginScreenState extends State<LoginScreen> {
                     padding: const EdgeInsets.all(24.0),
                     child: Column(
                       children: [
-                        // Logo/Title
                         Text(
                           'Lion Ride',
                           style: GoogleFonts.outfit(
@@ -151,7 +146,7 @@ class _LoginScreenState extends State<LoginScreen> {
                             letterSpacing: 1.5,
                             shadows: [
                               Shadow(
-                                color: Colors.black.withValues(alpha: 0.3),
+                                color: Colors.black.withAlpha(77),
                                 blurRadius: 10,
                                 offset: const Offset(0, 5),
                               ),
@@ -164,12 +159,11 @@ class _LoginScreenState extends State<LoginScreen> {
                           _isLogin ? 'Welcome Back!' : 'Join the Pride',
                           style: GoogleFonts.inter(
                             fontSize: 16,
-                            color: Colors.white.withValues(alpha: 0.8),
+                            color: Colors.white.withAlpha(204),
                             fontWeight: FontWeight.w500,
                           ),
                         ),
                         const SizedBox(height: 40),
-                        // Glassmorphism Card
                         ClipRRect(
                           borderRadius: BorderRadius.circular(30),
                           child: BackdropFilter(
@@ -177,10 +171,10 @@ class _LoginScreenState extends State<LoginScreen> {
                             child: Container(
                               padding: const EdgeInsets.all(32),
                               decoration: BoxDecoration(
-                                color: Colors.white.withValues(alpha: 0.15),
+                                color: Colors.white.withAlpha(38),
                                 borderRadius: BorderRadius.circular(30),
                                 border: Border.all(
-                                  color: Colors.white.withValues(alpha: 0.2),
+                                  color: Colors.white.withAlpha(51),
                                   width: 1.5,
                                 ),
                               ),
@@ -188,13 +182,13 @@ class _LoginScreenState extends State<LoginScreen> {
                                 crossAxisAlignment: CrossAxisAlignment.stretch,
                                 children: [
                                   if (!_isLogin) ...[
-                                    _buildTextField(
+                                    AuthTextField(
                                       controller: _nameController,
                                       label: 'Full Name',
                                       icon: Icons.person_outline,
                                     ),
                                     const SizedBox(height: 16),
-                                    _buildTextField(
+                                    AuthTextField(
                                       controller: _phoneController,
                                       label: 'Phone Number',
                                       icon: Icons.phone_outlined,
@@ -202,33 +196,33 @@ class _LoginScreenState extends State<LoginScreen> {
                                     ),
                                     const SizedBox(height: 16),
                                   ],
-                                  _buildTextField(
+                                  AuthTextField(
                                     controller: _emailController,
                                     label: 'Email Address',
                                     icon: Icons.email_outlined,
                                     keyboardType: TextInputType.emailAddress,
                                   ),
                                   const SizedBox(height: 16),
-                                  _buildTextField(
+                                  AuthTextField(
                                     controller: _passwordController,
                                     label: 'Password',
                                     icon: Icons.lock_outline,
                                     obscureText: true,
                                   ),
-                                    if (!_isLogin && _role == 'rider') ...[
-                                      const SizedBox(height: 16),
-                                      _buildTextField(
-                                        controller: _plateNumberController,
-                                        label: 'Plate Number (e.g. ENU-123-AB)',
-                                        icon: Icons.badge_outlined,
-                                      ),
-                                      const SizedBox(height: 16),
-                                      _buildTextField(
-                                        controller: _unionNumberController,
-                                        label: 'Union Number',
-                                        icon: Icons.numbers_outlined,
-                                      ),
-                                    ],
+                                  if (!_isLogin && _role == 'rider') ...[
+                                    const SizedBox(height: 16),
+                                    AuthTextField(
+                                      controller: _plateNumberController,
+                                      label: 'Plate Number (e.g. ENU-123-AB)',
+                                      icon: Icons.badge_outlined,
+                                    ),
+                                    const SizedBox(height: 16),
+                                    AuthTextField(
+                                      controller: _unionNumberController,
+                                      label: 'Union Number',
+                                      icon: Icons.numbers_outlined,
+                                    ),
+                                  ],
                                   if (!_isLogin) ...[
                                     const SizedBox(height: 24),
                                     Text(
@@ -242,13 +236,21 @@ class _LoginScreenState extends State<LoginScreen> {
                                     Row(
                                       children: [
                                         Expanded(
-                                          child: _buildRoleButton(
-                                              'student', Icons.school_outlined),
+                                          child: RoleSelectorButton(
+                                            role: 'student',
+                                            icon: Icons.school_outlined,
+                                            isSelected: _role == 'student',
+                                            onSelect: () => setState(() => _role = 'student'),
+                                          ),
                                         ),
                                         const SizedBox(width: 12),
                                         Expanded(
-                                          child: _buildRoleButton(
-                                              'rider', Icons.directions_bike),
+                                          child: RoleSelectorButton(
+                                            role: 'rider',
+                                            icon: Icons.directions_bike,
+                                            isSelected: _role == 'rider',
+                                            onSelect: () => setState(() => _role = 'rider'),
+                                          ),
                                         ),
                                       ],
                                     ),
@@ -265,11 +267,9 @@ class _LoginScreenState extends State<LoginScreen> {
                                       style: ElevatedButton.styleFrom(
                                         backgroundColor: Colors.white,
                                         foregroundColor: const Color(0xFF004D40),
-                                        padding: const EdgeInsets.symmetric(
-                                            vertical: 18),
+                                        padding: const EdgeInsets.symmetric(vertical: 18),
                                         shape: RoundedRectangleBorder(
-                                          borderRadius:
-                                              BorderRadius.circular(16),
+                                          borderRadius: BorderRadius.circular(16),
                                         ),
                                         elevation: 0,
                                       ),
@@ -290,16 +290,13 @@ class _LoginScreenState extends State<LoginScreen> {
                         ),
                         const SizedBox(height: 24),
                         TextButton(
-                          onPressed: () =>
-                              setState(() => _isLogin = !_isLogin),
+                          onPressed: () => setState(() => _isLogin = !_isLogin),
                           child: RichText(
                             text: TextSpan(
                               style: GoogleFonts.inter(color: Colors.white70),
                               children: [
                                 TextSpan(
-                                  text: _isLogin
-                                      ? "New here? "
-                                      : "Already a member? ",
+                                  text: _isLogin ? "New here? " : "Already a member? ",
                                 ),
                                 TextSpan(
                                   text: _isLogin ? "Sign Up" : "Login",
@@ -321,71 +318,6 @@ class _LoginScreenState extends State<LoginScreen> {
             ),
           ),
         ],
-      ),
-    );
-  }
-
-  Widget _buildTextField({
-    required TextEditingController controller,
-    required String label,
-    required IconData icon,
-    bool obscureText = false,
-    TextInputType? keyboardType,
-  }) {
-    return TextField(
-      controller: controller,
-      obscureText: obscureText,
-      keyboardType: keyboardType,
-      style: const TextStyle(color: Colors.white),
-      decoration: InputDecoration(
-        labelText: label,
-        labelStyle: TextStyle(color: Colors.white.withValues(alpha: 0.7)),
-        prefixIcon: Icon(icon, color: Colors.white.withValues(alpha: 0.7)),
-        enabledBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(16),
-          borderSide: BorderSide(color: Colors.white.withValues(alpha: 0.3)),
-        ),
-        focusedBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(16),
-          borderSide: const BorderSide(color: Colors.white),
-        ),
-        filled: true,
-        fillColor: Colors.white.withValues(alpha: 0.05),
-      ),
-    );
-  }
-
-  Widget _buildRoleButton(String role, IconData icon) {
-    bool isSelected = _role == role;
-    return GestureDetector(
-      onTap: () => setState(() => _role = role),
-      child: AnimatedContainer(
-        duration: const Duration(milliseconds: 200),
-        padding: const EdgeInsets.symmetric(vertical: 12),
-        decoration: BoxDecoration(
-          color: isSelected ? Colors.white : Colors.white.withValues(alpha: 0.1),
-          borderRadius: BorderRadius.circular(12),
-          border: Border.all(
-            color: isSelected ? Colors.white : Colors.white.withValues(alpha: 0.2),
-          ),
-        ),
-        child: Column(
-          children: [
-            Icon(
-              icon,
-              color: isSelected ? const Color(0xFF004D40) : Colors.white,
-            ),
-            const SizedBox(height: 4),
-            Text(
-              role.toUpperCase(),
-              style: GoogleFonts.outfit(
-                fontSize: 10,
-                fontWeight: FontWeight.bold,
-                color: isSelected ? const Color(0xFF004D40) : Colors.white,
-              ),
-            ),
-          ],
-        ),
       ),
     );
   }
