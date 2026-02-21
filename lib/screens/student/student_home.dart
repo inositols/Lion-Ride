@@ -1,17 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
-import 'package:nsuride_mobile/logic/verification/verification_bloc.dart';
-import 'package:nsuride_mobile/repositories/verification_repository.dart';
 import 'package:nsuride_mobile/screens/verification/verification_wizard.dart';
 import '../../logic/location/location_bloc.dart';
 import '../../logic/auth/auth_bloc.dart';
-import '../../repositories/location_repository.dart';
-import '../../core/services/safety_service.dart';
 import '../../logic/ride/ride_bloc.dart';
 import '../../models/ride_model.dart';
 import '../../models/base_user_model.dart';
-import '../../models/rider_model.dart';
+import '../../repositories/location_repository.dart';
 import '../shared/safety_toolkit_widget.dart';
 import '../../core/widgets/global_error_listener.dart';
 import '../../core/services/map_marker_service.dart';
@@ -22,6 +18,8 @@ import 'widgets/active_trip_panel.dart';
 import 'widgets/nearby_riders_sheet.dart';
 import 'widgets/negotiation_sheet.dart';
 import 'widgets/driver_found_notification.dart';
+import 'widgets/student_map.dart';
+import 'widgets/student_action_buttons.dart';
 
 class StudentHome extends StatefulWidget {
   const StudentHome({super.key});
@@ -50,9 +48,7 @@ class _StudentHomeState extends State<StudentHome> {
     try {
       final icon = await MapMarkerService.loadBikeIcon();
       if (mounted) {
-        setState(() {
-          _bikeIcon = icon;
-        });
+        setState(() => _bikeIcon = icon);
       }
     } catch (e) {
       debugPrint('Error loading marker icons: $e');
@@ -86,7 +82,6 @@ class _StudentHomeState extends State<StudentHome> {
             final authState = context.read<AuthBloc>().state;
             if (authState is AuthAuthenticated) {
               final student = authState.user;
-              // Add notes to the ride model if necessary, or just use the price
               final ride = RideModel(
                 rideId: rideId,
                 studentId: student.uid,
@@ -128,7 +123,6 @@ class _StudentHomeState extends State<StudentHome> {
         drawer: const StudentDrawer(),
         body: Stack(
           children: [
-            // Background: Full-screen Google Map
             BlocListener<RideBloc, RideState>(
               listener: (context, state) {
                 if (state is RideActive) {
@@ -137,7 +131,7 @@ class _StudentHomeState extends State<StudentHome> {
                     barrierDismissible: false,
                     builder: (context) => DriverFoundNotification(
                       driverName: state.acceptedRider?.name ?? 'Verified Rider',
-                      rating: 4.8, // Static for now, can be dynamic later
+                      rating: 4.8,
                       vehicleInfo: 'UNN Campus Rider',
                       plateNumber: state.acceptedRider?.plateNumber,
                       onTrackTap: () => Navigator.pop(context),
@@ -152,8 +146,7 @@ class _StudentHomeState extends State<StudentHome> {
                             state.ride.pickupLat < state.riderLocation!.latitude
                                 ? state.ride.pickupLat
                                 : state.riderLocation!.latitude,
-                            state.ride.pickupLng <
-                                    state.riderLocation!.longitude
+                            state.ride.pickupLng < state.riderLocation!.longitude
                                 ? state.ride.pickupLng
                                 : state.riderLocation!.longitude,
                           ),
@@ -161,41 +154,36 @@ class _StudentHomeState extends State<StudentHome> {
                             state.ride.pickupLat > state.riderLocation!.latitude
                                 ? state.ride.pickupLat
                                 : state.riderLocation!.latitude,
-                            state.ride.pickupLng >
-                                    state.riderLocation!.longitude
+                            state.ride.pickupLng > state.riderLocation!.longitude
                                 ? state.ride.pickupLng
                                 : state.riderLocation!.longitude,
                           ),
                         ),
-                        100, // padding
+                        100,
                       ),
                     );
                   }
                 }
               },
-              child: BlocConsumer<LocationBloc, LocationState>(
+              child: BlocListener<LocationBloc, LocationState>(
                 listener: (context, state) {
                   if (state is RouteLoaded) {
                     _mapController?.animateCamera(
                       CameraUpdate.newLatLngBounds(
                         LatLngBounds(
                           southwest: LatLng(
-                            state.pickupLocation.latitude <
-                                    state.dropoffLocation.latitude
+                            state.pickupLocation.latitude < state.dropoffLocation.latitude
                                 ? state.pickupLocation.latitude
                                 : state.dropoffLocation.latitude,
-                            state.pickupLocation.longitude <
-                                    state.dropoffLocation.longitude
+                            state.pickupLocation.longitude < state.dropoffLocation.longitude
                                 ? state.pickupLocation.longitude
                                 : state.dropoffLocation.longitude,
                           ),
                           northeast: LatLng(
-                            state.pickupLocation.latitude >
-                                    state.dropoffLocation.latitude
+                            state.pickupLocation.latitude > state.dropoffLocation.latitude
                                 ? state.pickupLocation.latitude
                                 : state.dropoffLocation.latitude,
-                            state.pickupLocation.longitude >
-                                    state.dropoffLocation.longitude
+                            state.pickupLocation.longitude > state.dropoffLocation.longitude
                                 ? state.pickupLocation.longitude
                                 : state.dropoffLocation.longitude,
                           ),
@@ -206,176 +194,22 @@ class _StudentHomeState extends State<StudentHome> {
                     _showConfirmBottomSheet(context, state);
                   }
                 },
-                builder: (context, state) {
-                  if (state is MapLoading) {
-                    return const Center(child: CircularProgressIndicator());
-                  }
-
-                  LatLng initialPos = LocationRepository.unnMainGate;
-                  Set<Marker> markers = {};
-
-                  if (state is MapLoaded) {
-                    initialPos = state.currentPosition;
-                    markers.add(
-                      Marker(
-                        markerId: const MarkerId('pickup'),
-                        position: initialPos,
-                      ),
-                    );
-
-                    final landmarksToShow = (_searchController.text.isNotEmpty)
-                        ? state.searchResults
-                        : LocationRepository.mockLandmarks;
-
-                    for (var landmark in landmarksToShow) {
-                      markers.add(
-                        Marker(
-                          markerId: MarkerId('landmark_${landmark.name}'),
-                          position: landmark.location,
-                          icon: BitmapDescriptor.defaultMarkerWithHue(
-                            BitmapDescriptor.hueAzure,
-                          ),
-                          infoWindow: InfoWindow(title: landmark.name),
-                          onTap: () {
-                            _searchController.text = landmark.name;
-                            context.read<LocationBloc>().add(
-                                  SelectLocation(landmark),
-                                );
-                          },
-                        ),
-                      );
-                    }
-                  }
-
-                  return BlocBuilder<RideBloc, RideState>(
-                    builder: (context, rideState) {
-                      Set<Marker> finalMarkers = Set.from(markers);
-
-                      for (var rider in rideState.nearbyRiders) {
-                        if (rider.lastLocation != null) {
-                          finalMarkers.add(
-                            Marker(
-                              markerId: MarkerId('nearby_${rider.uid}'),
-                              position: LatLng(
-                                rider.lastLocation!.latitude,
-                                rider.lastLocation!.longitude,
-                              ),
-                              icon: BitmapDescriptor.defaultMarkerWithHue(
-                                BitmapDescriptor.hueBlue,
-                              ),
-                              infoWindow: InfoWindow(
-                                title: 'Available Rider',
-                                snippet: rider.name,
-                              ),
-                            ),
-                          );
-                        }
-                      }
-
-                      if (rideState is RideActive) {
-                        finalMarkers.add(
-                          Marker(
-                            markerId: const MarkerId('pickup'),
-                            position: LatLng(
-                              rideState.ride.pickupLat,
-                              rideState.ride.pickupLng,
-                            ),
-                          ),
-                        );
-                        finalMarkers.add(
-                          Marker(
-                            markerId: const MarkerId('dropoff'),
-                            position: LatLng(
-                              rideState.ride.dropoffLat,
-                              rideState.ride.dropoffLng,
-                            ),
-                            icon: BitmapDescriptor.defaultMarkerWithHue(
-                              BitmapDescriptor.hueOrange,
-                            ),
-                            infoWindow: InfoWindow(
-                              title: rideState.ride.dropoffAddress,
-                            ),
-                          ),
-                        );
-                        if (rideState.riderLocation != null) {
-                          final currentPos = LatLng(
-                            rideState.riderLocation!.latitude,
-                            rideState.riderLocation!.longitude,
-                          );
-
-                          if (_lastRiderPosition != null &&
-                              _lastRiderPosition != currentPos) {
-                            _riderBearing = MapMarkerService.calculateBearing(
-                              _lastRiderPosition!,
-                              currentPos,
-                            );
-                          }
-                          _lastRiderPosition = currentPos;
-
-                          finalMarkers.add(
-                            Marker(
-                              markerId: const MarkerId('rider'),
-                              position: currentPos,
-                              icon:
-                                  _bikeIcon ??
-                                  BitmapDescriptor.defaultMarkerWithHue(
-                                    BitmapDescriptor.hueBlue,
-                                  ),
-                              rotation: _riderBearing,
-                              flat: true,
-                              anchor: const Offset(0.5, 0.5),
-                              infoWindow: const InfoWindow(title: 'Your Rider'),
-                            ),
-                          );
-                        }
-                      } else if (state is RouteLoaded) {
-                        initialPos = state.pickupLocation;
-                        finalMarkers.add(
-                          Marker(
-                            markerId: const MarkerId('pickup'),
-                            position: state.pickupLocation,
-                          ),
-                        );
-                        finalMarkers.add(
-                          Marker(
-                            markerId: const MarkerId('dropoff'),
-                            position: state.dropoffLocation,
-                            icon: BitmapDescriptor.defaultMarkerWithHue(
-                              BitmapDescriptor.hueOrange,
-                            ),
-                            infoWindow: InfoWindow(title: state.dropoff),
-                          ),
-                        );
-                      }
-
-                      return GoogleMap(
-                        onMapCreated: _onMapCreated,
-                        initialCameraPosition: CameraPosition(
-                          target: initialPos,
-                          zoom: 15,
-                        ),
-                        myLocationEnabled: true,
-                        myLocationButtonEnabled: false,
-                        markers: finalMarkers,
-                        zoomControlsEnabled: false,
-                      );
-                    },
-                  );
-                },
+                child: StudentMap(
+                  onMapCreated: _onMapCreated,
+                  bikeIcon: _bikeIcon,
+                  lastRiderPosition: _lastRiderPosition,
+                  riderBearing: _riderBearing,
+                  searchQuery: _searchController.text,
+                ),
               ),
             ),
-
-            // Top Search Bar
             BlocBuilder<LocationBloc, LocationState>(
               builder: (context, locState) {
-                final results = (locState is MapLoaded)
-                    ? locState.searchResults
-                    : <Place>[];
+                final results = (locState is MapLoaded) ? locState.searchResults : <Place>[];
                 return LocationSearchBar(
                   controller: _searchController,
                   onMenuTap: () => Scaffold.of(context).openDrawer(),
-                  onChanged: (val) =>
-                      context.read<LocationBloc>().add(SearchDestination(val)),
+                  onChanged: (val) => context.read<LocationBloc>().add(SearchDestination(val)),
                   onClear: () {
                     _searchController.clear();
                     context.read<LocationBloc>().add(LoadMap());
@@ -389,40 +223,7 @@ class _StudentHomeState extends State<StudentHome> {
                 );
               },
             ),
-
-            // Floating Action Buttons
-            Positioned(
-              right: 20,
-              bottom: 120,
-              child: Column(
-                children: [
-                  FloatingActionButton(
-                    heroTag: 'sos_btn',
-                    backgroundColor: Colors.red,
-                    onPressed: () {
-                      final authState = context.read<AuthBloc>().state;
-                      if (authState is AuthAuthenticated) {
-                        SafetyService.triggerSOS(authState.user.name, null);
-                      }
-                    },
-                    child: const Icon(Icons.warning, color: Colors.white),
-                  ),
-                  const SizedBox(height: 15),
-                  FloatingActionButton(
-                    heroTag: 'location_btn',
-                    backgroundColor: Colors.white,
-                    onPressed: () =>
-                        context.read<LocationBloc>().add(LoadMap()),
-                    child: const Icon(
-                      Icons.my_location,
-                      color: Color(0xFF004D40),
-                    ),
-                  ),
-                ],
-              ),
-            ),
-
-            // Nearby Riders List Sheet
+            const StudentActionButtons(),
             BlocBuilder<RideBloc, RideState>(
               builder: (context, rideState) {
                 if (rideState is! RideActive && rideState is! RideSearching) {
@@ -435,8 +236,7 @@ class _StudentHomeState extends State<StudentHome> {
                         studentPos = locState.pickupLocation;
                       }
 
-                      if (rideState.nearbyRiders.isNotEmpty &&
-                          studentPos != null) {
+                      if (rideState.nearbyRiders.isNotEmpty && studentPos != null) {
                         return NearbyRidersSheet(
                           riders: rideState.nearbyRiders,
                           studentPos: studentPos,
@@ -458,11 +258,7 @@ class _StudentHomeState extends State<StudentHome> {
                               _showConfirmBottomSheet(context, state);
                             } else {
                               ScaffoldMessenger.of(context).showSnackBar(
-                                const SnackBar(
-                                  content: Text(
-                                    'Please select a destination first',
-                                  ),
-                                ),
+                                const SnackBar(content: Text('Please select a destination first')),
                               );
                             }
                           },
@@ -475,38 +271,29 @@ class _StudentHomeState extends State<StudentHome> {
                 return const SizedBox.shrink();
               },
             ),
-
-            // Searching and Active Trip Overlays
             BlocBuilder<RideBloc, RideState>(
               builder: (context, state) {
                 if (state is RideSearching) {
                   return SearchingOverlay(
                     ride: state.ride,
-                    onCancel: () => context.read<RideBloc>().add(
-                      CancelRide(state.ride.rideId),
-                    ),
+                    onCancel: () => context.read<RideBloc>().add(CancelRide(state.ride.rideId)),
                   );
                 } else if (state is RideActive) {
                   return ActiveTripPanel(
                     ride: state.ride,
                     onCallPressed: () {},
                     onSafetyPressed: () {
-                      final BaseUserModel? driver = state.nearbyRiders
-                          .firstWhere(
-                            (r) => r.uid == state.ride.riderId,
-                            orElse: () => throw 'Driver not found',
-                          );
+                      final BaseUserModel? driver = state.nearbyRiders.firstWhere(
+                        (r) => r.uid == state.ride.riderId,
+                        orElse: () => throw 'Driver not found',
+                      );
                       showModalBottomSheet(
                         context: context,
                         shape: const RoundedRectangleBorder(
-                          borderRadius: BorderRadius.vertical(
-                            top: Radius.circular(25),
-                          ),
+                          borderRadius: BorderRadius.vertical(top: Radius.circular(25)),
                         ),
-                        builder: (context) => SafetyToolkitWidget(
-                          ride: state.ride,
-                          driver: driver,
-                        ).buildSafetySheet(context),
+                        builder: (context) =>
+                            SafetyToolkitWidget(ride: state.ride, driver: driver).buildSafetySheet(context),
                       );
                     },
                   );
@@ -514,16 +301,13 @@ class _StudentHomeState extends State<StudentHome> {
                 return const SizedBox.shrink();
               },
             ),
-
-            // Safety Toolkit Floating Button (only when active)
             BlocBuilder<RideBloc, RideState>(
               builder: (context, rideState) {
                 if (rideState is RideActive) {
-                  final BaseUserModel? driver = rideState.nearbyRiders
-                      .firstWhere(
-                        (r) => r.uid == rideState.ride.riderId,
-                        orElse: () => throw 'Driver not found',
-                      );
+                  final BaseUserModel? driver = rideState.nearbyRiders.firstWhere(
+                    (r) => r.uid == rideState.ride.riderId,
+                    orElse: () => throw 'Driver not found',
+                  );
 
                   return Positioned(
                     right: 20,
