@@ -105,6 +105,34 @@ class _StudentHomeState extends State<StudentHome> {
     );
   }
 
+  void _centerMapOnActiveRide(RideActive state) {
+    if (_mapController != null && state.riderLocation != null) {
+      _mapController!.animateCamera(
+        CameraUpdate.newLatLngBounds(
+          LatLngBounds(
+            southwest: LatLng(
+              state.ride.pickupLat < state.riderLocation!.latitude
+                  ? state.ride.pickupLat
+                  : state.riderLocation!.latitude,
+              state.ride.pickupLng < state.riderLocation!.longitude
+                  ? state.ride.pickupLng
+                  : state.riderLocation!.longitude,
+            ),
+            northeast: LatLng(
+              state.ride.pickupLat > state.riderLocation!.latitude
+                  ? state.ride.pickupLat
+                  : state.riderLocation!.latitude,
+              state.ride.pickupLng > state.riderLocation!.longitude
+                  ? state.ride.pickupLng
+                  : state.riderLocation!.longitude,
+            ),
+          ),
+          100,
+        ),
+      );
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     final authState = context.watch<AuthBloc>().state;
@@ -134,35 +162,12 @@ class _StudentHomeState extends State<StudentHome> {
                       rating: 4.8,
                       vehicleInfo: 'UNN Campus Rider',
                       plateNumber: state.acceptedRider?.plateNumber,
-                      onTrackTap: () => Navigator.pop(context),
+                      onTrackTap: () {
+                        Navigator.pop(context);
+                        _centerMapOnActiveRide(state);
+                      },
                     ),
                   );
-
-                  if (_mapController != null && state.riderLocation != null) {
-                    _mapController!.animateCamera(
-                      CameraUpdate.newLatLngBounds(
-                        LatLngBounds(
-                          southwest: LatLng(
-                            state.ride.pickupLat < state.riderLocation!.latitude
-                                ? state.ride.pickupLat
-                                : state.riderLocation!.latitude,
-                            state.ride.pickupLng < state.riderLocation!.longitude
-                                ? state.ride.pickupLng
-                                : state.riderLocation!.longitude,
-                          ),
-                          northeast: LatLng(
-                            state.ride.pickupLat > state.riderLocation!.latitude
-                                ? state.ride.pickupLat
-                                : state.riderLocation!.latitude,
-                            state.ride.pickupLng > state.riderLocation!.longitude
-                                ? state.ride.pickupLng
-                                : state.riderLocation!.longitude,
-                          ),
-                        ),
-                        100,
-                      ),
-                    );
-                  }
                 }
               },
               child: BlocListener<LocationBloc, LocationState>(
