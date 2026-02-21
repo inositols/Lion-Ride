@@ -12,7 +12,6 @@ class LiveMapView extends StatefulWidget {
 
 class _LiveMapViewState extends State<LiveMapView> {
   GoogleMapController? _mapController;
-  final Set<Marker> _markers = {};
 
   // Default campus center (Example: Obafemi Awolowo University)
   static const CameraPosition _initialPosition = CameraPosition(
@@ -37,12 +36,12 @@ class _LiveMapViewState extends State<LiveMapView> {
         return StreamBuilder<QuerySnapshot>(
           stream: FirebaseFirestore.instance.collection('rides').where('status', whereIn: ['ongoing', 'searching']).snapshots(),
           builder: (context, ridesSnapshot) {
-            _updateMarkers(ridersSnapshot.data?.docs ?? [], ridesSnapshot.data?.docs ?? []);
+            final markers = _calculateMarkers(ridersSnapshot.data?.docs ?? [], ridesSnapshot.data?.docs ?? []);
             
             return GoogleMap(
               initialCameraPosition: _initialPosition,
               onMapCreated: (controller) => _mapController = controller,
-              markers: _markers,
+              markers: markers,
               myLocationButtonEnabled: false,
               zoomControlsEnabled: true,
               mapType: MapType.normal,
@@ -53,7 +52,7 @@ class _LiveMapViewState extends State<LiveMapView> {
     );
   }
 
-  void _updateMarkers(List<DocumentSnapshot> riders, List<DocumentSnapshot> rides) {
+  Set<Marker> _calculateMarkers(List<DocumentSnapshot> riders, List<DocumentSnapshot> rides) {
     final Set<Marker> newMarkers = {};
 
     // 1. Add Online Riders (Blue)
@@ -102,8 +101,7 @@ class _LiveMapViewState extends State<LiveMapView> {
       }
     }
 
-    setState(() => _markers.clear());
-    setState(() => _markers.addAll(newMarkers));
+    return newMarkers;
   }
 
   Widget _buildLegend() {

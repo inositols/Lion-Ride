@@ -92,9 +92,23 @@ class _AdminDashboardLayoutState extends State<AdminDashboardLayout> {
       child: Column(
         children: [
           _buildLogo(),
-          const SizedBox(height: 32),
-          ...List.generate(_menuItems.length, (i) => _buildNavItem(i, _menuItems[i].icon, _menuItems[i].title, currentIndex == i)),
-          const Spacer(),
+          const SizedBox(height: 8), // Reduced from 32
+          Expanded(
+            child: SingleChildScrollView(
+              padding: const EdgeInsets.symmetric(vertical: 8),
+              child: Column(
+                children: List.generate(
+                  _menuItems.length,
+                  (i) => _buildNavItem(
+                    i,
+                    _menuItems[i].icon,
+                    _menuItems[i].title,
+                    currentIndex == i,
+                  ),
+                ),
+              ),
+            ),
+          ),
           _buildAdminProfile(),
         ],
       ),
@@ -169,19 +183,40 @@ class _AdminDashboardLayoutState extends State<AdminDashboardLayout> {
 
   Widget _buildDrawer(int currentIndex) {
     return Drawer(
-      child: Container(
-        color: const Color(0xFF004D40),
+      child: SafeArea(
         child: Column(
           children: [
             _buildLogo(),
-            ...List.generate(_menuItems.length, (i) => ListTile(
-              leading: Icon(_menuItems[i].icon, color: currentIndex == i ? const Color(0xFFFFC107) : Colors.white70),
-              title: Text(_menuItems[i].title, style: TextStyle(color: currentIndex == i ? Colors.white : Colors.white70, fontWeight: currentIndex == i ? FontWeight.bold : FontWeight.normal)),
-              onTap: () {
-                _selectedIndex.value = i;
-                Navigator.pop(context);
-              },
-            )),
+            Expanded(
+              child: SingleChildScrollView(
+                child: Column(
+                  children: List.generate(
+                    _menuItems.length,
+                    (i) => ListTile(
+                      leading: Icon(
+                        _menuItems[i].icon,
+                        color: currentIndex == i
+                            ? const Color(0xFFFFC107)
+                            : Colors.white70,
+                      ),
+                      title: Text(
+                        _menuItems[i].title,
+                        style: TextStyle(
+                          color: currentIndex == i ? Colors.white : Colors.white70,
+                          fontWeight: currentIndex == i
+                              ? FontWeight.bold
+                              : FontWeight.normal,
+                        ),
+                      ),
+                      onTap: () {
+                        _selectedIndex.value = i;
+                        Navigator.pop(context);
+                      },
+                    ),
+                  ),
+                ),
+              ),
+            ),
           ],
         ),
       ),

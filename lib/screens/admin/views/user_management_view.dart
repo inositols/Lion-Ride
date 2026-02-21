@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:intl/intl.dart';
 
 class UserManagementView extends StatefulWidget {
   const UserManagementView({super.key});
@@ -26,24 +27,41 @@ class _UserManagementViewState extends State<UserManagementView> {
       context: context,
       builder: (context) => StatefulBuilder(
         builder: (context, setDialogState) => AlertDialog(
-          title: Text('Change User Role', style: GoogleFonts.outfit(fontWeight: FontWeight.bold)),
+          title: Text(
+            'Change User Role',
+            style: GoogleFonts.outfit(fontWeight: FontWeight.bold),
+          ),
           content: Column(
             mainAxisSize: MainAxisSize.min,
-            children: ['student', 'rider', 'admin'].map((role) => RadioListTile<String>(
-              title: Text(role.toUpperCase(), style: GoogleFonts.inter()),
-              value: role,
-              groupValue: selectedRole,
-              onChanged: (val) => setDialogState(() => selectedRole = val!),
-            )).toList(),
+            children: ['student', 'rider', 'admin']
+                .map(
+                  (role) => RadioListTile<String>(
+                    title: Text(role.toUpperCase(), style: GoogleFonts.inter()),
+                    value: role,
+                    groupValue: selectedRole,
+                    onChanged: (val) =>
+                        setDialogState(() => selectedRole = val!),
+                  ),
+                )
+                .toList(),
           ),
           actions: [
-            TextButton(onPressed: () => Navigator.pop(context), child: const Text('CANCEL')),
+            TextButton(
+              onPressed: () => Navigator.pop(context),
+              child: const Text('CANCEL'),
+            ),
             ElevatedButton(
               onPressed: () async {
-                await FirebaseFirestore.instance.collection('users').doc(uid).update({'role': selectedRole});
+                await FirebaseFirestore.instance
+                    .collection('users')
+                    .doc(uid)
+                    .update({'role': selectedRole});
                 if (context.mounted) Navigator.pop(context);
               },
-              style: ElevatedButton.styleFrom(backgroundColor: const Color(0xFF004D40), foregroundColor: Colors.white),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: const Color(0xFF004D40),
+                foregroundColor: Colors.white,
+              ),
               child: const Text('UPDATE ROLE'),
             ),
           ],
@@ -67,10 +85,20 @@ class _UserManagementViewState extends State<UserManagementView> {
                 children: [
                   Text(
                     'User Management',
-                    style: GoogleFonts.outfit(fontSize: 32, fontWeight: FontWeight.bold, color: const Color(0xFF004D40)),
+                    style: GoogleFonts.outfit(
+                      fontSize: 32,
+                      fontWeight: FontWeight.bold,
+                      color: const Color(0xFF004D40),
+                    ),
                   ),
                   const SizedBox(height: 8),
-                  Text('Oversee all registered students, riders, and administrators', style: GoogleFonts.inter(color: Colors.black54, fontSize: 16)),
+                  Text(
+                    'Oversee all registered students, riders, and administrators',
+                    style: GoogleFonts.inter(
+                      color: Colors.black54,
+                      fontSize: 16,
+                    ),
+                  ),
                 ],
               ),
               _buildSearchAndFilter(),
@@ -82,27 +110,44 @@ class _UserManagementViewState extends State<UserManagementView> {
               decoration: BoxDecoration(
                 color: Colors.white,
                 borderRadius: BorderRadius.circular(24),
-                boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.03), blurRadius: 20, offset: const Offset(0, 10))],
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black.withOpacity(0.03),
+                    blurRadius: 20,
+                    offset: const Offset(0, 10),
+                  ),
+                ],
               ),
               child: ClipRRect(
                 borderRadius: BorderRadius.circular(24),
                 child: StreamBuilder<QuerySnapshot>(
-                  stream: FirebaseFirestore.instance.collection('users').snapshots(),
+                  stream: FirebaseFirestore.instance
+                      .collection('users')
+                      .snapshots(),
                   builder: (context, snapshot) {
-                    if (snapshot.connectionState == ConnectionState.waiting) return const Center(child: CircularProgressIndicator());
-                    
+                    if (snapshot.connectionState == ConnectionState.waiting)
+                      return const Center(child: CircularProgressIndicator());
+
                     var docs = snapshot.data?.docs ?? [];
-                    
+
                     // Client-side filtering for demonstration/simplicity
                     var users = docs.where((doc) {
                       final data = doc.data() as Map<String, dynamic>;
-                      final name = (data['name'] ?? '').toString().toLowerCase();
-                      final email = (data['email'] ?? '').toString().toLowerCase();
+                      final name = (data['name'] ?? '')
+                          .toString()
+                          .toLowerCase();
+                      final email = (data['email'] ?? '')
+                          .toString()
+                          .toLowerCase();
                       final role = (data['role'] ?? '').toString();
-                      
-                      final matchesSearch = name.contains(_searchQuery.toLowerCase()) || email.contains(_searchQuery.toLowerCase());
-                      final matchesRole = _selectedRole == 'All' || role == _selectedRole.toLowerCase();
-                      
+
+                      final matchesSearch =
+                          name.contains(_searchQuery.toLowerCase()) ||
+                          email.contains(_searchQuery.toLowerCase());
+                      final matchesRole =
+                          _selectedRole == 'All' ||
+                          role == _selectedRole.toLowerCase();
+
                       return matchesSearch && matchesRole;
                     }).toList();
 
@@ -111,11 +156,16 @@ class _UserManagementViewState extends State<UserManagementView> {
                       child: SingleChildScrollView(
                         scrollDirection: Axis.horizontal,
                         child: ConstrainedBox(
-                          constraints: BoxConstraints(minWidth: MediaQuery.of(context).size.width - 360),
+                          constraints: BoxConstraints(
+                            minWidth: MediaQuery.of(context).size.width - 360,
+                          ),
                           child: DataTable(
                             headingRowHeight: 64,
                             dataRowMaxHeight: 72,
-                            headingTextStyle: GoogleFonts.inter(fontWeight: FontWeight.bold, color: const Color(0xFF004D40)),
+                            headingTextStyle: GoogleFonts.inter(
+                              fontWeight: FontWeight.bold,
+                              color: const Color(0xFF004D40),
+                            ),
                             columns: const [
                               DataColumn(label: Text('NAME')),
                               DataColumn(label: Text('EMAIL')),
@@ -128,39 +178,90 @@ class _UserManagementViewState extends State<UserManagementView> {
                               final data = doc.data() as Map<String, dynamic>;
                               final role = data['role'] ?? 'student';
                               final status = data['status'] ?? 'active';
-                              final bool isSuspended = data['is_suspended'] ?? false;
-                              final double balance = (data['wallet_balance'] ?? 0.0).toDouble();
+                              final bool isSuspended =
+                                  data['is_suspended'] ?? false;
+                              final double balance =
+                                  (data['wallet_balance'] ?? 0.0).toDouble();
 
                               return DataRow(
-                                color: WidgetStateProperty.resolveWith<Color?>((states) {
-                                  if (isSuspended) return Colors.red.withOpacity(0.05);
+                                color: WidgetStateProperty.resolveWith<Color?>((
+                                  states,
+                                ) {
+                                  if (isSuspended)
+                                    return Colors.red.withOpacity(0.05);
                                   return null;
                                 }),
                                 cells: [
-                                  DataCell(Text(data['name'] ?? 'N/A', style: const TextStyle(fontWeight: FontWeight.w500))),
+                                  DataCell(
+                                    Text(
+                                      data['name'] ?? 'N/A',
+                                      style: const TextStyle(
+                                        fontWeight: FontWeight.w500,
+                                      ),
+                                    ),
+                                  ),
                                   DataCell(Text(data['email'] ?? 'N/A')),
                                   DataCell(Text(data['phone'] ?? 'N/A')),
                                   DataCell(_buildRoleBadge(role)),
-                                  DataCell(Text('₦${NumberFormat('#,###').format(balance)}')),
-                                  DataCell(_buildStatusBadge(isSuspended ? 'suspended' : status)),
+                                  DataCell(
+                                    Text(
+                                      '₦${NumberFormat('#,###').format(balance)}',
+                                    ),
+                                  ),
+                                  DataCell(
+                                    _buildStatusBadge(
+                                      isSuspended ? 'suspended' : status,
+                                    ),
+                                  ),
                                   DataCell(
                                     PopupMenuButton<String>(
                                       onSelected: (val) async {
                                         if (val == 'role') {
-                                          _showRoleDialog(context, doc.id, role);
+                                          _showRoleDialog(
+                                            context,
+                                            doc.id,
+                                            role,
+                                          );
                                         } else if (val == 'suspend') {
-                                          await FirebaseFirestore.instance.collection('users').doc(doc.id).update({
-                                            'is_suspended': !isSuspended,
-                                          });
+                                          await FirebaseFirestore.instance
+                                              .collection('users')
+                                              .doc(doc.id)
+                                              .update({
+                                                'is_suspended': !isSuspended,
+                                              });
                                         } else if (val == 'reset_pin') {
-                                          ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Wallet PIN Reset initiated')));
+                                          ScaffoldMessenger.of(
+                                            context,
+                                          ).showSnackBar(
+                                            const SnackBar(
+                                              content: Text(
+                                                'Wallet PIN Reset initiated',
+                                              ),
+                                            ),
+                                          );
                                         }
                                       },
                                       itemBuilder: (context) => [
-                                        const PopupMenuItem(value: 'profile', child: Text('View Profile')),
-                                        const PopupMenuItem(value: 'role', child: Text('Change Role')),
-                                        PopupMenuItem(value: 'suspend', child: Text(isSuspended ? 'Unsuspend User' : 'Suspend Account')),
-                                        const PopupMenuItem(value: 'reset_pin', child: Text('Reset Wallet PIN')),
+                                        const PopupMenuItem(
+                                          value: 'profile',
+                                          child: Text('View Profile'),
+                                        ),
+                                        const PopupMenuItem(
+                                          value: 'role',
+                                          child: Text('Change Role'),
+                                        ),
+                                        PopupMenuItem(
+                                          value: 'suspend',
+                                          child: Text(
+                                            isSuspended
+                                                ? 'Unsuspend User'
+                                                : 'Suspend Account',
+                                          ),
+                                        ),
+                                        const PopupMenuItem(
+                                          value: 'reset_pin',
+                                          child: Text('Reset Wallet PIN'),
+                                        ),
                                       ],
                                       icon: const Icon(Icons.more_vert),
                                     ),
@@ -214,7 +315,11 @@ class _UserManagementViewState extends State<UserManagementView> {
           child: DropdownButtonHideUnderline(
             child: DropdownButton<String>(
               value: _selectedRole,
-              items: ['All', 'Student', 'Rider', 'Admin'].map((role) => DropdownMenuItem(value: role, child: Text(role))).toList(),
+              items: ['All', 'Student', 'Rider', 'Admin']
+                  .map(
+                    (role) => DropdownMenuItem(value: role, child: Text(role)),
+                  )
+                  .toList(),
               onChanged: (val) => setState(() => _selectedRole = val!),
             ),
           ),
@@ -230,20 +335,42 @@ class _UserManagementViewState extends State<UserManagementView> {
 
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-      decoration: BoxDecoration(color: color.withOpacity(0.1), borderRadius: BorderRadius.circular(20)),
-      child: Text(role.toUpperCase(), style: TextStyle(color: color, fontSize: 10, fontWeight: FontWeight.bold)),
+      decoration: BoxDecoration(
+        color: color.withOpacity(0.1),
+        borderRadius: BorderRadius.circular(20),
+      ),
+      child: Text(
+        role.toUpperCase(),
+        style: TextStyle(
+          color: color,
+          fontSize: 10,
+          fontWeight: FontWeight.bold,
+        ),
+      ),
     );
   }
 
   Widget _buildStatusBadge(String status) {
     bool isActive = status == 'active';
     bool isSuspended = status == 'suspended';
-    Color color = isActive ? Colors.green : (isSuspended ? Colors.red : Colors.grey);
+    Color color = isActive
+        ? Colors.green
+        : (isSuspended ? Colors.red : Colors.grey);
 
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-      decoration: BoxDecoration(color: color.withOpacity(0.1), borderRadius: BorderRadius.circular(20)),
-      child: Text(status.toUpperCase(), style: TextStyle(color: color, fontSize: 10, fontWeight: FontWeight.bold)),
+      decoration: BoxDecoration(
+        color: color.withOpacity(0.1),
+        borderRadius: BorderRadius.circular(20),
+      ),
+      child: Text(
+        status.toUpperCase(),
+        style: TextStyle(
+          color: color,
+          fontSize: 10,
+          fontWeight: FontWeight.bold,
+        ),
+      ),
     );
   }
 }
