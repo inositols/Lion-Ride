@@ -37,7 +37,7 @@ class WalletBloc extends Bloc<WalletEvent, WalletState> {
     _logger.i('Loading wallet...');
 
     try {
-      final firebaseUser = await _authRepository.user.firstWhere((user) => user != null);
+      final firebaseUser = await _authRepository.user.first;
       if (firebaseUser == null) {
         _logger.w('No authenticated user found for wallet loading.');
         emit(const WalletError('User not authenticated.'));
@@ -59,8 +59,12 @@ class WalletBloc extends Bloc<WalletEvent, WalletState> {
           .listen(
         (userSnap) {
           if (!userSnap.exists) {
+            if (userSnap.metadata.isFromCache) {
+              _logger.w('User document not found in cache. Waiting for server...');
+              return;
+            }
             _logger.e('User document does not exist in Firestore for UID: $userId');
-            add(_WalletErrorOccurred('User profile not found.'));
+            add(const _WalletErrorOccurred('User profile not found.'));
             return;
           }
           
